@@ -1,0 +1,11 @@
+email-validator
+flask-cors
+flask
+flask-restful
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
+sqlalchemy
+werkzeug
+flask-socketio
+Flask-Migrate
