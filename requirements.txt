@@ -1,6 +1,7 @@
 email-validator
 flask-cors
 flask
+dotenv
 flask-restful
 flask-sqlalchemy
 gunicorn
