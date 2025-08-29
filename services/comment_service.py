@@ -23,7 +23,7 @@ class CommentService:
         try:
             db.session.add(new_comment) 
             db.session.commit()         
-            return {'message': 'Comment created', 'comment': new_comment.to_dict()}, 201
+            return {'message': 'Comment created', 'comment': new_comment.to_dict(include_relationships=False)}, 201
         except Exception as e:
             db.session.rollback() 
             return {'message': f'Error creating comment: {str(e)}'}, 500
@@ -35,12 +35,18 @@ class CommentService:
         return {'message': 'Comment not found'}, 404
 
     def updateComment(self, comment_id, commentBody):
-        comment = self.getCommentById(comment_id)
-        if not comment:
-            return {'message': 'Comment not found'}, 404
+        if not isinstance(commentBody, dict):
+            return {'message': 'Invalid request body format'}, 400
         
-        commentUpdated = self.comment_model.update(comment_id, commentBody['content'])
-        return {'message': 'Comment updated', 'comment': commentUpdated.to_dict()}, 200
+        comment_data, status_code = self.getCommentById(comment_id)
+        if status_code != 200:
+            return {'message': 'Comment not found'}, status_code
+        
+        comment = self.comment_model.query.get(comment_id)
+        comment.content = commentBody['content']
+        db.session.commit()
+
+        return {'message': 'Comment updated', 'comment': comment.to_dict(include_relationships=False)}, 200
 
     def delete(self, comment_id):
         return {'message': 'Comment deleted', 'comment_id': comment_id}, 204

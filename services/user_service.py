@@ -9,13 +9,14 @@ class UserService:
         self.logger = LoggerApp
         self.user_model = UserModel
 
-    def getUserByIdorAll(self, user_id):
+    def getAllUsers(self):
+        users = self.user_model.query.all()
+        return [u.to_dict() for u in users], 200
+
+    def getUserByIdOrAll(self, user_id):
         if user_id:
             user = self.user_model.query.get_or_404(user_id)
-            return user.to_dict(include_relationships=True), 200
-        else:
-            users = self.user_model.query.all()
-            return [u.to_dict() for u in users], 200
+            return user.to_dict(include_relationships=True), 200            
 
     def existUser(self, name):
         user = self.user_model.query.filter_by(name=name).first()
@@ -23,12 +24,7 @@ class UserService:
             return True
         return None
     
-    def getAllUsers(self):
-        users = self.user_model.query.all()
-        return [{'id': user.id, 'name': user.name, 'email': user.email} for user in users], 200
-
     def createUser(self, userBody):
-        print(userBody['name'])
         if not userBody or 'name' not in userBody or 'email' not in userBody:
             return {'message': 'Name and email required'}, 400  
         

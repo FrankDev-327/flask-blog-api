@@ -3,7 +3,7 @@ from base_resource import BaseResource
 
 class UserController(BaseResource):
     method_map = {
-        'GET': 'getUserByIdorAll',  
+        'GET': 'getAllUsers',  
         'POST': 'createUser',
     }
     
@@ -11,8 +11,9 @@ class UserController(BaseResource):
         super().__init__()
         self.user_service = UserService()
         
-    def getUserByIdorAll(self, user_id):
-        return self.user_service.getUserByIdorAll(user_id)
+    
+    def getAllUsers(self):
+        return self.user_service.getAllUsers()
     
     def createUser(self, user_body):
         user = self.user_service.existUser(user_body.get('name'))
