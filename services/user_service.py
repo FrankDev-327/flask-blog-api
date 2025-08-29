@@ -12,7 +12,7 @@ class UserService:
     def getUserById(self, user_id):
         user = self.user_model.query.get(user_id)
         if user:
-            return {'id': user.id, 'name': user.name, 'email': user.email}, 200
+            return user.to_dict(), 200
         return {'message': 'User not found'}, 404
 
     def existUser(self, name):
