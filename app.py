@@ -7,6 +7,7 @@ from db_connection.data_base import DataBase
 from werkzeug.exceptions import HTTPException
 from routes.user_route import register_user_routes
 from routes.post_route import register_post_routes
+from routes.comment_route import register_comment_route
 from routes.health_check_route import register_health_check_route
 from connection import init_db, db, init_migrate 
 
@@ -30,6 +31,7 @@ def getAllMethods():
 
 register_user_routes(api);
 register_post_routes(api);
+register_comment_route(api);
 register_health_check_route(api);
 
 # Catch all HTTP errors (4xx, 5xx)
