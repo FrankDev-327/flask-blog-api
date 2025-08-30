@@ -9,5 +9,5 @@ CORS(app)
 logger = LoggerApp();
 
 if __name__ == '__main__':
-    logger.logInfo('server starting...');
+    logger.logInfoServer('server starting...');
     app.run(host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True)
