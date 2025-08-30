@@ -6,15 +6,13 @@ ARG APP_DIR=/flask-api
 WORKDIR $APP_DIR
 
 COPY requirements.txt $APP_DIR/requirements.txt
-RUN pip3 install -r requirements.txt
+COPY entrypoint.sh /entrypoint.sh
 
-ENV DB_CONN="" \
-    PORT= \
-    DEBUG_MODE= \
-    HOST="" \
-    ENV_APP="" \
-    SECRET_SESSION=""
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN chmod +x /entrypoint.sh
 
 COPY . .
 
-CMD [ "python3", "-m", "flask", "--app", "run_server", "run", "--host=0.0.0.0"]
+EXPOSE 5000
+
+ENTRYPOINT ["/entrypoint.sh"]
