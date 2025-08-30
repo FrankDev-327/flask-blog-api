@@ -10,3 +10,4 @@ sqlalchemy
 werkzeug
 flask-socketio
 Flask-Migrate
+redis[hiredis]
