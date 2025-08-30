@@ -1,3 +1,6 @@
 .vscode
 .env
 *.log
+
+#Avoid to push this folder
+**/__pycache__/
