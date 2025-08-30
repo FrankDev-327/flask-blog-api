@@ -3,10 +3,9 @@ from connection import db
 from logger.logging import LoggerApp
 from models.user_model import UserModel 
 
-
 class UserService:
     def __init__(self):
-        self.logger = LoggerApp
+        self.logger = LoggerApp()
         self.user_model = UserModel
 
     def getAllUsers(self):
@@ -26,16 +25,18 @@ class UserService:
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
-            return {'message': 'Name and email required'}, 400  
+            self.logger.logErrorInfo({'errorMsg':'Name and email required'})
+            return {'message': 'Name and email required'}, 400
         
-        new_user = self.user_model(name=userBody['name'], email=userBody['email'])
         try:
+            new_user = self.user_model(name=userBody['name'], email=userBody['email'])
             db.session.add(new_user)  
             db.session.commit()       
             return {'message': 'User created', 'user': new_user.to_dict()}, 201
+        
         except Exception as e:
             db.session.rollback()     
-            self.logger.logInfo(e)
+            self.logger.logErrorInfo({'errorMsg':str(e)})
             return {'message': f'Error creating user: {str(e)}'}, 500
 
     def put(self, user_id):
