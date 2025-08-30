@@ -5,3 +5,5 @@
 #Avoid to push this folder
 #**/__pycache__/
 __pycache__
+
+api-flask-venv/*
