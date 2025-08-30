@@ -1,0 +1,23 @@
+
+services:
+  flask_api:
+    container_name: ms_flask_api
+    ports:
+      - 5000:5000
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    networks:
+      - flask_api_network
+    volumes:
+      - flask_api:/app
+    restart: always
+
+volumes:
+  flask_api:
+
+networks:
+  flask_api_network:
+    driver: bridge
