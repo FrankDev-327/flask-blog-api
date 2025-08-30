@@ -1,9 +1,11 @@
 import os
 from app import app
+from flask_cors import CORS
 from logger.logging import LoggerApp
 from dotenv import load_dotenv
 
 load_dotenv()
+CORS(app)
 logger = LoggerApp();
 
 if __name__ == '__main__':

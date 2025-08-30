@@ -29,28 +29,26 @@ if os.getenv('ENV_APP') == 'development':
 def getAllMethods():
     pass
 
+#Routes section
 register_user_routes(api);
 register_post_routes(api);
 register_comment_route(api);
 register_health_check_route(api);
 
-# Catch all HTTP errors (4xx, 5xx)
 @app.errorhandler(HTTPException)
 def handle_http_exception(e):
     response = {
-        "error": e.name,       # e.g. "Not Found"
+        "error": e.name,
         "message": e.description,
         "status": e.code
     }
     return jsonify(response), e.code
 
-
-# Catch non-HTTP exceptions (uncaught errors)
 @app.errorhandler(Exception)
 def handle_exception(e):
     response = {
         "error": "Internal Server Error",
-        "message": str(e),  # safe for all exceptions
+        "message": str(e),
         "status": 500
     }
     return jsonify(response), 500
