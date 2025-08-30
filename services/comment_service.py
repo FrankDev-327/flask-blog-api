@@ -6,7 +6,7 @@ from models.comment_model import CommentModel
 
 class CommentService:
     def __init__(self):
-        self.logger = LoggerApp
+        self.logger = LoggerApp()
         self.comment_model = CommentModel
         self.user_service = UserService()
         self.post_service = PostService()
