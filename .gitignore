@@ -2,8 +2,23 @@
 .env
 *.log
 
-#Avoid to push this folder
-#**/__pycache__/
-__pycache__
-
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
 api-flask-venv/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Docker
+*.pid
+*.sock

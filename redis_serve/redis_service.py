@@ -15,3 +15,6 @@ class RedisService:
         if data is not None:
             return json.load(data)
         return None
+
+    def storeChatStream(self, chatBody):
+        pass

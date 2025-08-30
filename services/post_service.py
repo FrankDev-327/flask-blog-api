@@ -20,11 +20,12 @@ class PostService:
         keyPost = 'allPost'
         postsFromRedis = self.redisService.getTemporalInfo(keyPost)
         if postsFromRedis is not None:
-            return json.loads(postsFromRedis), 200
+            return postsFromRedis, 200
 
         posts = self.post_model.query.all()
         posts_dict = [post.to_dict() for post in posts]
         self.redisService.setTemporalInfo(keyPost, json.dumps(posts_dict))
+        
         return posts_dict, 200
 
     def createPost(self, postBody):
