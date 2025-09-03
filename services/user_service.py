@@ -1,3 +1,4 @@
+from utils.helpers import Helper
 from flask import jsonify
 from connection import db  
 from logger.logging import LoggerApp
@@ -5,6 +6,7 @@ from models.user_model import UserModel
 
 class UserService:
     def __init__(self):
+        self.helper = Helper()
         self.logger = LoggerApp()
         self.user_model = UserModel
 
@@ -21,7 +23,25 @@ class UserService:
         user = self.user_model.query.filter_by(name=name).first()
         if user:
             return True
-        return None
+        return 
+    
+    def checkExistinUser(self, userBody):
+        try:
+            userInfo = self.user_model.query.filter_by(nick_name=userBody['nick_name']).first()
+            if  userInfo is None:
+                return {'messgae':'user not found not wrong passwor'}, 404
+            
+            userInfo = userInfo.to_dict()
+            comparePassword = self.helper.compareHashAndPlainText( userBody['password'], userInfo['password'])
+            if not comparePassword:
+                return {'messgae':'user not found not wrong passwor'}, 404
+            
+        except Exception as e: 
+            self.logger.logErrorInfo({'errorMsg':str(e)})
+            return {'message': f'Error checking user info: {str(e)}'}, 500
+        
+        del userInfo['password']
+        return {'user': userInfo, 'message': 'user auth'}, 200
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
@@ -29,7 +49,13 @@ class UserService:
             return {'message': 'Name and email required'}, 400
         
         try:
-            new_user = self.user_model(name=userBody['name'], email=userBody['email'])
+            new_user = self.user_model(
+                name=userBody['name'], 
+                email=userBody['email'], 
+                password= self.helper.hashingTextToHash(userBody['password']),
+                nick_name=userBody['nick_name']
+            )
+            
             db.session.add(new_user)  
             db.session.commit()       
             return {'message': 'User created', 'user': new_user.to_dict()}, 201
