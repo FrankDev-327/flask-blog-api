@@ -5,10 +5,11 @@ class SerializableMixin:
     def to_dict(self, include_relationships=False):
         """Convert SQLAlchemy model to dict, handling datetime"""
         result = {}
+        format = "%m-%d-%Y %H:%M:%S"
         for column in self.__table__.columns:
             value = getattr(self, column.name)
             if isinstance(value, (datetime, date)):
-                value = value.isoformat()
+                value = date.strftime(value, format)
             result[column.name] = value
             
         if include_relationships:
