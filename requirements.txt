@@ -12,3 +12,4 @@ flask-socketio
 Flask-Migrate
 redis[hiredis]
 flask-bcrypt
+jwt

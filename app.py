@@ -1,4 +1,5 @@
 import os
+import models
 from flask_restful import Api
 from flask_bcrypt import Bcrypt
 from logger.logging import LoggerApp
