@@ -1,4 +1,3 @@
-from flask import Flask
 from serializabel_mixin import SerializableMixin
 from connection import db  # Importing the db instance from connection.py
 
