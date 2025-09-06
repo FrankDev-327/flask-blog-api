@@ -21,6 +21,7 @@ def upgrade():
         sa.Column('id', sa.Integer(), primary_key=True, nullable=False),
         sa.Column('token', sa.Text(), nullable=False, unique=True),
         sa.Column('marked_as_used', sa.Boolean(), default=False),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
         if_not_exists=True
     )
 
