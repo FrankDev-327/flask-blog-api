@@ -27,7 +27,6 @@ class UserService:
             return True
         return 
     
-    @require_token
     def checkExistinUser(self, userBody):
         try:
             userInfo = self.user_model.query.filter_by(nick_name=userBody['nick_name']).first()

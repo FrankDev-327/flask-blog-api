@@ -3,9 +3,11 @@ import jwt
 from functools import wraps
 from flask import request, abort
 from logger.logging import LoggerApp
+from services.token_service import TokenService
 from datetime import datetime, timedelta, timezone
 
 LoggerApp = LoggerApp()
+tokenService = TokenService()
 
 def require_token(func):
     @wraps(func)
@@ -15,7 +17,12 @@ def require_token(func):
             abort(401, description="Missing or invalid token header")
 
         token = auth_header.split(" ")[1]
-
+        existToken = tokenService.getTokenById(token)
+        if not existToken:
+            abort(401, description="Token not found")
+        elif existToken.get('marked_as_used'):
+            abort(401, description="Token has been marked as used in blacklist")
+            
         try:
             payload = jwt.decode(token, os.getenv('SECRET_KEY'), do_time_check=True, algorithms=['HS256'])
             request.user = payload
@@ -23,6 +30,7 @@ def require_token(func):
             LoggerApp.logErrorInfo({'errorMsg': 'Token expired'})
             abort(401, description="Token expired")
         except jwt.InvalidTokenError:
+            tokenService.createToken(token, marked_as_used=True)
             LoggerApp.logErrorInfo({'errorMsg': 'Invalid token'})
             abort(401, description="Invalid token")
 
@@ -42,4 +50,6 @@ def generateToken(userBody):
         LoggerApp.logErrorInfo({'errorMsg': f"Missing key in userBody: {e}"})
         raise KeyError(f"Missing key in userBody: {e}")
     
-    return jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+    tokenGenerated = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+    tokenService.createToken(tokenGenerated)
+    return tokenGenerated
