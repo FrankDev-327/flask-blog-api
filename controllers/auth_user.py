@@ -1,5 +1,7 @@
-from services.user_service import UserService
+from middleware.check_token import generateToken
 from base_resource import BaseResource 
+from services.user_service import UserService
+
 
 class AuthUserController(BaseResource):
     method_map = { 
@@ -11,4 +13,6 @@ class AuthUserController(BaseResource):
         self.user_service = UserService()
     
     def checkExistinUser(self, user_body):
-        return self.user_service.checkExistinUser(user_body)
+        user = self.user_service.checkExistinUser(user_body)
+        token = generateToken(user[0]['user'])
+        return {'token': token}

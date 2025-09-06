@@ -1,5 +1,5 @@
 from serializabel_mixin import SerializableMixin
-from connection import db  # Importing the db instance from connection.py
+from connection import db
 
 class UserModel(db.Model, SerializableMixin):
     __tablename__ = 'users'
@@ -13,4 +13,3 @@ class UserModel(db.Model, SerializableMixin):
 
     posts = db.relationship('PostModel', back_populates='user', lazy=True)
     comments = db.relationship('CommentModel', back_populates='user', lazy=True)
-    role = db.relationship('RoleModel', back_populates='user', lazy=True)
