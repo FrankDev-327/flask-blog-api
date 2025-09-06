@@ -33,7 +33,7 @@ class UserService:
             if  userInfo is None:
                 return {'messgae':'user not found not wrong passwor'}, 404
             
-            userInfo = userInfo.to_dict()
+            userInfo = userInfo.to_dict(include_relationships=True)
             comparePassword = self.helper.compareHashAndPlainText( userBody['password'], userInfo['password'])
             if not comparePassword:
                 return {'messgae':'user not found not wrong passwor'}, 404
