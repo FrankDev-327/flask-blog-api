@@ -1,11 +1,11 @@
 import os
-from jwt import (JWT)
+import jwt
 from functools import wraps
 from flask import request, abort
-from jwt.utils import get_int_from_datetime
+from logger.logging import LoggerApp
 from datetime import datetime, timedelta, timezone
 
-instance = JWT()
+LoggerApp = LoggerApp()
 
 def require_token(func):
     @wraps(func)
@@ -17,25 +17,29 @@ def require_token(func):
         token = auth_header.split(" ")[1]
 
         try:
-            payload = instance.decode(token, os.getenv('SECRET_KEY'), do_time_check=True, )
+            payload = jwt.decode(token, os.getenv('SECRET_KEY'), do_time_check=True, algorithms=['HS256'])
             request.user = payload
-        except instance.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError:
+            LoggerApp.logErrorInfo({'errorMsg': 'Token expired'})
             abort(401, description="Token expired")
-        except instance.InvalidTokenError:
+        except jwt.InvalidTokenError:
+            LoggerApp.logErrorInfo({'errorMsg': 'Invalid token'})
             abort(401, description="Invalid token")
 
         return func(*args, **kwargs)
     return wrapper
 
 def generateToken(userBody):
-    token = {
-        'name':userBody['name'],
-        'nick_name':userBody['nick_name'],
-        'id':userBody['id'],
-        'iat': get_int_from_datetime(datetime.now(timezone.utc)),
-        'exp' : get_int_from_datetime(
-            datetime.now(timezone.utc) + timedelta(hours=1)
-        ),
-    }
+    try:
+        payload = {
+            "id": userBody["id"],
+            "name": userBody["name"],
+            "nick_name": userBody["nick_name"],
+            "iat": int(datetime.now(timezone.utc).timestamp()),
+            "exp": int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
+        }
+    except KeyError as e:
+        LoggerApp.logErrorInfo({'errorMsg': f"Missing key in userBody: {e}"})
+        raise KeyError(f"Missing key in userBody: {e}")
     
-    return instance.encode(token, os.getenv('SECRET_KEY'),)
+    return jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')

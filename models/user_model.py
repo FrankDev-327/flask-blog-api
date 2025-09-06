@@ -1,5 +1,5 @@
 from serializabel_mixin import SerializableMixin
-from connection import db  # Importing the db instance from connection.py
+from connection import db
 
 class UserModel(db.Model, SerializableMixin):
     __tablename__ = 'users'
