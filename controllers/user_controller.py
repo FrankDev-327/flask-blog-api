@@ -1,5 +1,6 @@
 from services.user_service import UserService
 from base_resource import BaseResource 
+from middleware.check_token import require_token, check_user_role
 
 class UserController(BaseResource):
     method_map = {
@@ -12,9 +13,13 @@ class UserController(BaseResource):
         self.user_service = UserService()
         
     
+    @require_token
+    @check_user_role
     def getAllUsers(self):
         return self.user_service.getAllUsers()
     
+    @require_token
+    @check_user_role
     def createUser(self, user_body):
         user = self.user_service.existUser(user_body.get('name'))
         if user:

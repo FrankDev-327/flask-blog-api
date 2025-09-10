@@ -1,6 +1,7 @@
 from utils.helpers import Helper
 from flask import jsonify
 from connection import db  
+from queries.session_query import Query
 from middleware.check_token import require_token
 from logger.logging import LoggerApp
 from models.user_model import UserModel 
@@ -8,10 +9,10 @@ from models.user_model import UserModel
 class UserService:
     def __init__(self):
         self.helper = Helper()
+        self.queries = Query()
         self.logger = LoggerApp()
         self.user_model = UserModel
 
-    @require_token
     def getAllUsers(self):
         users = self.user_model.query.all()
         return [u.to_dict() for u in users], 200
@@ -33,6 +34,8 @@ class UserService:
             if  userInfo is None:
                 return {'messgae':'user not found not wrong passwor'}, 404
             
+            data = self.queries.getUserWithRoles(3)
+            #print(data)
             userInfo = userInfo.to_dict(include_relationships=True)
             comparePassword = self.helper.compareHashAndPlainText( userBody['password'], userInfo['password'])
             if not comparePassword:
@@ -45,7 +48,6 @@ class UserService:
         del userInfo['password']
         return {'user': userInfo, 'message': 'user auth'}, 200
     
-    @require_token
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
             self.logger.logErrorInfo({'errorMsg':'Name and email required'})
@@ -68,10 +70,8 @@ class UserService:
             self.logger.logErrorInfo({'errorMsg':str(e)})
             return {'message': f'Error creating user: {str(e)}'}, 500
 
-    @require_token
     def put(self, user_id):
         return {'message': 'User updated', 'user_id': user_id}, 200
 
-    @require_token
     def delete(self, user_id):
         return {'message': 'User deleted', 'user_id': user_id}, 204

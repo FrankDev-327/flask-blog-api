@@ -10,4 +10,4 @@ class RoleModel(db.Model, SerializableMixin):
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
     
-    user = db.relationship('UserModel', back_populates='role') 
+    user = db.relationship('UserModel', back_populates='role', uselist=False) 

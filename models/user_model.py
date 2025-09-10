@@ -13,4 +13,4 @@ class UserModel(db.Model, SerializableMixin):
 
     posts = db.relationship('PostModel', back_populates='user', lazy=True)
     comments = db.relationship('CommentModel', back_populates='user', lazy=True)
-    role = db.relationship('RoleModel', back_populates='user', uselist=False) 
+    role = db.relationship('RoleModel', uselist=False) 

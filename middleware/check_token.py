@@ -40,9 +40,12 @@ def require_token(func):
 def check_user_role(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if request.user['role'] != 'admin':
-            abort(403, description="User does not have the required role")
-        return func(*args, **kwargs)
+        try:
+            if request.user['role'] != 'admin':
+                abort(403, description="User does not have the required role")
+            return func(*args, **kwargs)
+        except AttributeError:
+            abort(401, description="Unauthorized: User information missing")
     return wrapper
 
 def generateToken(userBody):
