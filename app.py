@@ -9,6 +9,7 @@ from connection import init_db, init_migrate
 from db_connection.data_base import DataBase
 from werkzeug.exceptions import HTTPException
 from routes.auth_user import register_auth_user
+from routes.role_route import register_role_route
 from routes.user_route import register_user_routes
 from routes.post_route import register_post_routes
 from socket_service.socket_service import SockerService
@@ -38,6 +39,7 @@ def getAllMethods():
 
 #Routes section
 register_auth_user(api)
+register_role_route(api)
 register_user_routes(api);
 register_post_routes(api);
 register_comment_route(api);
