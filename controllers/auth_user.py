@@ -14,5 +14,5 @@ class AuthUserController(BaseResource):
     
     def checkExistinUser(self, user_body):
         user = self.user_service.checkExistinUser(user_body)
-        token = generateToken(user[0]['user'])
+        token = generateToken(user)
         return {'token': token}
