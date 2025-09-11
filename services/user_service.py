@@ -31,14 +31,29 @@ class UserService:
         return user_list, 200
 
     def getUserByIdOrAll(self, user_id):
-        if user_id:
-            user = self.user_model.query.get_or_404(user_id)
-            return user.to_dict(include_relationships=True), 200            
+        try:
+            if user_id:
+                stmt = select(UserModel).where(UserModel.id == user_id)
+                user = db.session.execute(stmt).scalar_one_or_none()
+                if not user:
+                    return {'message': 'User not found'}, 404
+                user_dict = {
+                    "id": user.id,
+                    "name": user.name,
+                    "nick_name": user.nick_name,
+                    "email": user.email
+                }
+                return user_dict, 200
+            else:   
+                return { 'message': 'User ID is required'}, 400
+        except Exception as e:
+            self.logger.logErrorInfo({'getUserByIdOrAll ': str(e)})
+            return {'message': f'Error retrieving user: {str(e)}'}, 500
+          
 
     def existUser(self, name):
         stmt = select(UserModel).where(UserModel.name == name)
         user = db.session.execute(stmt).scalar_one_or_none()
-        #user = self.user_model.query.filter_by(name=name).first()
         if user:
             return True
         return 
