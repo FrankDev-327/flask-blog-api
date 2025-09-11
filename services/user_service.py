@@ -1,10 +1,11 @@
 from utils.helpers import Helper
 from flask import jsonify
 from connection import db  
+from sqlalchemy import select, join, insert
 from queries.session_query import Query
-from middleware.check_token import require_token
 from logger.logging import LoggerApp
 from models.user_model import UserModel 
+from models.role_model import RoleModel
 
 class UserService:
     def __init__(self):
@@ -14,60 +15,104 @@ class UserService:
         self.user_model = UserModel
 
     def getAllUsers(self):
-        users = self.user_model.query.all()
-        return [u.to_dict() for u in users], 200
+        stmt = select(UserModel)
+        users = db.session.execute(stmt).scalars().all()
+
+        user_list = []
+        for user in users:
+            user_dict = {
+                "id": user.id,
+                "name": user.name,
+                "nick_name": user.nick_name,
+                "email": user.email
+            }
+            
+            user_list.append(user_dict)
+        return user_list, 200
 
     def getUserByIdOrAll(self, user_id):
-        if user_id:
-            user = self.user_model.query.get_or_404(user_id)
-            return user.to_dict(include_relationships=True), 200            
+        try:
+            if user_id:
+                stmt = select(UserModel).where(UserModel.id == user_id)
+                user = db.session.execute(stmt).scalar_one_or_none()
+                if not user:
+                    return {'message': 'User not found'}, 404
+                user_dict = {
+                    "id": user.id,
+                    "name": user.name,
+                    "nick_name": user.nick_name,
+                    "email": user.email
+                }
+                return user_dict, 200
+            else:   
+                return { 'message': 'User ID is required'}, 400
+        except Exception as e:
+            self.logger.logErrorInfo({'getUserByIdOrAll ': str(e)})
+            return {'message': f'Error retrieving user: {str(e)}'}, 500
+          
 
     def existUser(self, name):
-        user = self.user_model.query.filter_by(name=name).first()
+        stmt = select(UserModel).where(UserModel.name == name)
+        user = db.session.execute(stmt).scalar_one_or_none()
         if user:
             return True
         return 
     
     def checkExistinUser(self, userBody):
         try:
-            userInfo = self.user_model.query.filter_by(nick_name=userBody['nick_name']).first()
-            if  userInfo is None:
-                return {'messgae':'user not found not wrong passwor'}, 404
-            
-            data = self.queries.getUserWithRoles(3)
-            #print(data)
-            userInfo = userInfo.to_dict(include_relationships=True)
-            comparePassword = self.helper.compareHashAndPlainText( userBody['password'], userInfo['password'])
+            stmt = (
+                select(UserModel, RoleModel)
+                .join(RoleModel, UserModel.id == RoleModel.user_id)
+                .where(UserModel.nick_name == userBody['nick_name'])
+            )
+
+            row = db.session.execute(stmt).fetchone()
+            if row is None:
+                return {'message': 'user not found or wrong password'}, 404
+
+            user, role = row  
+            comparePassword = self.helper.compareHashAndPlainText(
+                userBody['password'], user.password
+            )
             if not comparePassword:
-                return {'messgae':'user not found not wrong passwor'}, 404
-            
+                return {'message': 'user not found or wrong password'}, 404
+
         except Exception as e: 
-            self.logger.logErrorInfo({'errorMsg':str(e)})
+            self.logger.logErrorInfo({'checkExistinUser': str(e)})
             return {'message': f'Error checking user info: {str(e)}'}, 500
+
+        userData = {
+            "id": user.id,
+            "name": user.name,
+            "nick_name": user.nick_name,
+            "email": user.email,
+            "roles": role.role_name, 
+        }
         
-        del userInfo['password']
-        return {'user': userInfo, 'message': 'user auth'}, 200
+        return userData, 200
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
-            self.logger.logErrorInfo({'errorMsg':'Name and email required'})
+            self.logger.logErrorInfo({'createUser':'Name and email required'})
             return {'message': 'Name and email required'}, 400
         
         try:
-            new_user = self.user_model(
+            if self.existUser(userBody['name']):
+                return {'message': 'User already exists'}, 409
+
+            new_user = insert(UserModel).values(
                 name=userBody['name'], 
                 email=userBody['email'], 
-                password= self.helper.hashingTextToHash(userBody['password']),
+                password= self.helper.hashingTextToHash(userBody['password']),          
                 nick_name=userBody['nick_name']
             )
-            
-            db.session.add(new_user)  
-            db.session.commit()       
-            return {'message': 'User created', 'user': new_user.to_dict()}, 201
-        
+            db.session.execute(new_user).first()
+            db.session.commit()
+                           
+            return {'message': 'User created'}, 201
         except Exception as e:
             db.session.rollback()     
-            self.logger.logErrorInfo({'errorMsg':str(e)})
+            self.logger.logErrorInfo({'createUser':str(e)})
             return {'message': f'Error creating user: {str(e)}'}, 500
 
     def put(self, user_id):

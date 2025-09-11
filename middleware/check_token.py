@@ -1,7 +1,7 @@
 import os
 import jwt
 from functools import wraps
-from flask import request, abort
+from flask import request, abort, jsonify
 from logger.logging import LoggerApp
 from services.token_service import TokenService
 from datetime import datetime, timedelta, timezone
@@ -50,16 +50,17 @@ def check_user_role(func):
 
 def generateToken(userBody):
     try:
+        user, status = userBody
         payload = {
-            "id": userBody["id"],
-            "name": userBody["name"],
-            "nick_name": userBody["nick_name"],
-            'role': userBody['role']['role_name'],
+            "id": user['id'],
+            "name": user['name'],
+            "nick_name": user['nick_name'],
+            'role': user['roles'],  
             "iat": int(datetime.now(timezone.utc).timestamp()),
             "exp": int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
         }
     except KeyError as e:
-        LoggerApp.logErrorInfo({'errorMsg': f"Missing key in userBody: {e}"})
+        LoggerApp.logErrorInfo({'tokenError': f"Missing key in userBody: {e}"})
         raise KeyError(f"Missing key in userBody: {e}")
     
     tokenGenerated = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
