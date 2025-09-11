@@ -14,12 +14,12 @@ class UserController(BaseResource):
         
     
     @require_token
-    #@check_user_role
+    @check_user_role
     def getAllUsers(self):
         return self.user_service.getAllUsers()
     
     @require_token
-    #@check_user_role
+    @check_user_role
     def createUser(self, user_body):
         user = self.user_service.existUser(user_body.get('name'))
         if user:

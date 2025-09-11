@@ -36,7 +36,9 @@ class UserService:
             return user.to_dict(include_relationships=True), 200            
 
     def existUser(self, name):
-        user = self.user_model.query.filter_by(name=name).first()
+        stmt = select(UserModel).where(UserModel.name == name)
+        user = db.session.execute(stmt).scalar_one_or_none()
+        #user = self.user_model.query.filter_by(name=name).first()
         if user:
             return True
         return 
@@ -61,7 +63,7 @@ class UserService:
                 return {'message': 'user not found or wrong password'}, 404
 
         except Exception as e: 
-            self.logger.logErrorInfo({'userError': str(e)})
+            self.logger.logErrorInfo({'checkExistinUser': str(e)})
             return {'message': f'Error checking user info: {str(e)}'}, 500
 
         userData = {
@@ -76,10 +78,13 @@ class UserService:
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
-            self.logger.logErrorInfo({'errorMsg':'Name and email required'})
+            self.logger.logErrorInfo({'createUser':'Name and email required'})
             return {'message': 'Name and email required'}, 400
         
         try:
+            if self.existUser(userBody['name']):
+                return {'message': 'User already exists'}, 409
+
             new_user = insert(UserModel).values(
                 name=userBody['name'], 
                 email=userBody['email'], 
@@ -88,24 +93,11 @@ class UserService:
             )
             db.session.execute(new_user).first()
             db.session.commit()
-            
-            """
-            new_user = self.user_model(
-                name=userBody['name'], 
-                email=userBody['email'], 
-                password= self.helper.hashingTextToHash(userBody['password']),
-                nick_name=userBody['nick_name']
-            )
-            
-            db.session.add(new_user)  
-            db.session.commit()  
-            """   
-               
-            return {'message': 'User created', 'user': new_user}, 201
-        
+                           
+            return {'message': 'User created'}, 201
         except Exception as e:
             db.session.rollback()     
-            self.logger.logErrorInfo({'errorMsg':str(e)})
+            self.logger.logErrorInfo({'createUser':str(e)})
             return {'message': f'Error creating user: {str(e)}'}, 500
 
     def put(self, user_id):
