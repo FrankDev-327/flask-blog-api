@@ -1,6 +1,6 @@
 #!/bin/sh
 # exit on error
-set -euo pipefail
+set -eu
 
 echo "Running database migrations..."
 flask db upgrade

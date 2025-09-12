@@ -2,7 +2,7 @@ import os
 import models
 
 from flask_restful import Api
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
 from utils.helpers import bcrypt
 from logger.logging import LoggerApp
 from connection import init_db, init_migrate 
@@ -14,6 +14,7 @@ from routes.user_route import register_user_routes
 from routes.post_route import register_post_routes
 from socket_service.socket_service import SockerService
 from routes.comment_route import register_comment_route
+from prometheus_client import start_http_server, generate_latest, CONTENT_TYPE_LATEST
 from routes.health_check_route import register_health_check_route
 
 log = LoggerApp()
@@ -44,6 +45,10 @@ register_user_routes(api);
 register_post_routes(api);
 register_comment_route(api);
 register_health_check_route(api);
+
+@app.route("/metrics")
+def returnMetrics():
+    return  Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)   
 
 @app.errorhandler(HTTPException)
 def handle_http_exception(e):
