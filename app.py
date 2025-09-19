@@ -1,5 +1,4 @@
 import os
-import models
 
 from flask_restful import Api
 from flask import Flask, jsonify, Response
@@ -14,7 +13,7 @@ from routes.user_route import register_user_routes
 from routes.post_route import register_post_routes
 from socket_service.socket_service import SockerService
 from routes.comment_route import register_comment_route
-from prometheus_client import start_http_server, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from routes.health_check_route import register_health_check_route
 
 log = LoggerApp()
