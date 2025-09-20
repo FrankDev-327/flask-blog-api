@@ -4,7 +4,11 @@ import json
 
 class RedisService:
     def __init__(self):
-        self.redis = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), decode_responses=True)
+        self.redis = redis.Redis(
+            host=os.getenv('REDIS_HOST'), 
+            port=os.getenv('REDIS_PORT'), 
+            decode_responses=True
+        )
         
     def setTemporalInfo(self, key, data, ttl=100):
         json_data = json.dumps(data)

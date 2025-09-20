@@ -17,9 +17,16 @@ class PostService:
 
     @require_token
     def getPostById(self, post_id):
-        post = self.post_model.query.get(post_id)
+        stmt = (select(PostModel).where(PostModel.id == post_id))
+        post = db.session.execute(stmt).scalar_one_or_none()
         if post:
-            return post.to_dict(), 200
+            return {
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
+                "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
+            }, 200
         return {'message': 'Post not found'}, 404
 
     @require_token
@@ -29,11 +36,21 @@ class PostService:
         if postsFromRedis is not None:
             return postsFromRedis, 200
 
-        posts = self.post_model.query.all()
-        posts_dict = [post.to_dict() for post in posts]
-        self.redisService.setTemporalInfo(keyPost, json.dumps(posts_dict))
         
-        return posts_dict, 200
+        posts = db.session.execute(select(PostModel)).scalars().all()
+        post_list = []
+        for post in posts:
+            post_dict = {
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
+                "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
+            }
+            post_list.append(post_dict)
+        
+        self.redisService.setTemporalInfo(keyPost, json.dumps(post_list))
+        return {"message": "List of posts", "posts": post_list}, 200
 
     @require_token
     def createPost(self, postBody):
