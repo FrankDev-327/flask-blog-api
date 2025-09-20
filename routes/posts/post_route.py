@@ -1,5 +1,5 @@
 from flask_restful import Api
-from controllers.post_controller import PostController
+from controllers.posts.post_controller import PostController
 
 def register_post_routes(api: Api):
     api.add_resource(PostController, '/post', methods=['POST'], endpoint='post_create')

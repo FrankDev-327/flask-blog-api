@@ -11,3 +11,6 @@ class Helper:
     
     def compareHashAndPlainText(self, plainText, hashText):
         return bcrypt.check_password_hash(hashText, plainText)
+    
+    def formatting_time(self, timeToBeFormatted, formatTime):
+        return timeToBeFormatted.strftime(formatTime)

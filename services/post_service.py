@@ -1,9 +1,13 @@
 import json
 from connection import db  
+from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.post_model import PostModel 
 from middleware.check_token import require_token
 from redis_serve.redis_service import RedisService
+from sqlalchemy import select, insert, update, delete, join
+
+helper = Helper()
 
 class PostService:
     def __init__(self):
@@ -37,14 +41,34 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage': 'Title, content, and user_id required'})
             return {'message': 'Title, content, and user_id required'}, 400  
         
-        new_post = self.post_model(title=postBody['title'], content=postBody['content'], user_id=postBody['user_id'])
         try:
-            db.session.add(new_post)
+            stmt = (
+                insert(self.post_model).values(
+                    title=postBody['title'],
+                    content=postBody['content'],
+                    user_id=postBody['user_id']
+                ).returning(self.post_model)
+            )
+        
+            result = db.session.execute(stmt)
+            row = result.fetchone()
             db.session.commit()       
-            return {'message': 'Post created', 'post': new_post.to_dict()}, 201
+            new_post = row[0]
+            
+            return {
+                "message": "Post created",
+                "post": {
+                    "id": new_post.id,
+                    "title": new_post.title,
+                    "content": new_post.content,
+                    "user_id": new_post.user_id,
+                    "created_at": helper.formatting_time(new_post.created_at, "%Y-%m-%d %H:%M:%S"),
+                    "updated_at": helper.formatting_time(new_post.updated_at, "%Y-%m-%d %H:%M:%S")
+                },
+            }, 200
         except Exception as e:
             db.session.rollback()  
-            self.logger.logErrorInfo({'messerrorMsgage':  'Error creating post'})
+            self.logger.logErrorInfo({'messerrorMsgage':  f'Error creating post {str(e)}'})
             return {'message': f'Error creating post: {str(e)}'}, 500
 
     @require_token

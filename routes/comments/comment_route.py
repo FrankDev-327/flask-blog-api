@@ -1,5 +1,5 @@
 from flask_restful import Api
-from controllers.comment_controller import CommentController
+from controllers.authentication.comment_controller import CommentController
 
 def register_comment_route(api: Api):
     api.add_resource(CommentController, '/comments', methods=['POST'], endpoint='comments')  

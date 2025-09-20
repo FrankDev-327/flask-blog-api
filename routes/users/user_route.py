@@ -1,6 +1,6 @@
 from flask_restful import Api
-from controllers.user_controller import UserController
-from controllers.user_list_post_and_comment_controller import UserListPostAndCommentController
+from controllers.users.user_controller import UserController
+from controllers.comments.user_list_post_and_comment_controller import UserListPostAndCommentController
 
 def register_user_routes(api: Api):
     api.add_resource(UserController, '/user', methods=['GET'], endpoint='user_all')

@@ -7,14 +7,14 @@ from logger.logging import LoggerApp
 from connection import init_db, init_migrate 
 from db_connection.data_base import DataBase
 from werkzeug.exceptions import HTTPException
-from routes.auth_user import register_auth_user
+from routes.authentication.auth_user import register_auth_user
 from prometheus_client import Histogram, Counter
-from routes.role_route import register_role_route
-from routes.user_route import register_user_routes
-from routes.post_route import register_post_routes
+from routes.roles.role_route import register_role_route
+from routes.users.user_route import register_user_routes
+from routes.posts.post_route import register_post_routes
 from flask import Flask, jsonify, Response, request
 from socket_service.socket_service import SockerService
-from routes.comment_route import register_comment_route
+from routes.comments.comment_route import register_comment_route
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from routes.health_check_route import register_health_check_route
 
