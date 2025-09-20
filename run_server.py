@@ -1,11 +1,12 @@
 import os
-from app import app, socketio
 from flask_cors import CORS
-from logger.logging import LoggerApp
+from app import app, socketio
 from dotenv import load_dotenv
+from logger.logging import LoggerApp
 
-load_dotenv()
+
 CORS(app)
+load_dotenv()
 logger = LoggerApp();
 
 if __name__ == '__main__':

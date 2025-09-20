@@ -13,3 +13,4 @@ Flask-Migrate
 redis[hiredis]
 flask-bcrypt
 PyJWT
+prometheus-client

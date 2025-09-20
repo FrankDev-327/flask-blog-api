@@ -2,7 +2,6 @@ from middleware.check_token import generateToken
 from base_resource import BaseResource 
 from services.user_service import UserService
 
-
 class AuthUserController(BaseResource):
     method_map = { 
         'POST': 'checkExistinUser'

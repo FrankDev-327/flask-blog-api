@@ -1,4 +1,8 @@
 from flask_socketio import SocketIO, ConnectionRefusedError
+from prometheus_client import Gauge, Histogram
+
+request_latency = Histogram('socket_request_latency_seconds', 'Socket Request latency', ['event'])
+request_gauge = Gauge('socket_active_connections', 'Number of active socket connections')
 
 class SockerService:
     def __init__(self, appInstance):
