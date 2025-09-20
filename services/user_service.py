@@ -1,7 +1,6 @@
 from utils.helpers import Helper
 from flask import jsonify, request
 from connection import db  
-from services.prometheus_service import PrometheusService
 from sqlalchemy import select, join, insert
 from queries.session_query import Query
 from logger.logging import LoggerApp
@@ -14,12 +13,8 @@ class UserService:
         self.queries = Query()
         self.logger = LoggerApp()
         self.user_model = UserModel
-        self.promService = PrometheusService()
 
     def getAllUsers(self):
-        self.promService.log_request(
-            method=request.method, route=request.path, status=200   
-        )
         stmt = select(UserModel)
         users = db.session.execute(stmt).scalars().all()
 
@@ -65,9 +60,6 @@ class UserService:
     
     def checkExistinUser(self, userBody):
         try:
-            self.promService.log_request(
-                method=request.method, route=request.path, status=200   
-            )
             stmt = (
                 select(UserModel, RoleModel)
                 .join(RoleModel, UserModel.id == RoleModel.user_id)
@@ -76,9 +68,6 @@ class UserService:
 
             row = db.session.execute(stmt).fetchone()
             if row is None:
-                self.promService.log_request(
-                    method=request.method, route=request.path, status=404   
-                )
                 return {'message': 'user not found or wrong password'}, 404
 
             user, role = row  
@@ -86,16 +75,10 @@ class UserService:
                 userBody['password'], user.password
             )
             if not comparePassword:
-                self.promService.log_request(
-                    method=request.method, route=request.path, status=404   
-                )
                 return {'message': 'user not found or wrong password'}, 404
 
         except Exception as e: 
             self.logger.logErrorInfo({'checkExistinUser': str(e)})
-            self.promService.log_request(
-                    method=request.method, route=request.path, status=500   
-            )
             return {'message': f'Error checking user info: {str(e)}'}, 500
 
         userData = {
@@ -106,29 +89,17 @@ class UserService:
             "roles": role.role_name, 
         }
         
-        self.promService.log_request(
-            method=request.method, route=request.path, status=20   
-        )
         return userData, 200
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
-            self.promService.log_request(
-                method=request.method, route=request.path, status=400   
-            )
             self.logger.logErrorInfo({'createUser':'Name and email required'})
             return {'message': 'Name and email required'}, 400
         
         try:
             if self.existUser(userBody['name']):
-                self.promService.log_request(
-                    method=request.method, route=request.path, status=409   
-                )
                 return {'message': 'User already exists'}, 409
 
-            self.promService.log_request(
-                method=request.method, route=request.path, status=201   
-            )
             new_user = insert(UserModel).values(
                 name=userBody['name'], 
                 email=userBody['email'], 
@@ -142,9 +113,6 @@ class UserService:
         except Exception as e:
             db.session.rollback()     
             self.logger.logErrorInfo({'createUser':str(e)})
-            self.promService.log_request(
-                method=request.method, route=request.path, status=500   
-            )
             return {'message': f'Error creating user: {str(e)}'}, 500
 
     def put(self, user_id):

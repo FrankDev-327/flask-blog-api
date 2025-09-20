@@ -1,20 +1,25 @@
 import os
 
+import time
 from flask_restful import Api
-from flask import Flask, jsonify, Response
 from utils.helpers import bcrypt
 from logger.logging import LoggerApp
 from connection import init_db, init_migrate 
 from db_connection.data_base import DataBase
 from werkzeug.exceptions import HTTPException
 from routes.auth_user import register_auth_user
+from prometheus_client import Histogram, Counter
 from routes.role_route import register_role_route
 from routes.user_route import register_user_routes
 from routes.post_route import register_post_routes
+from flask import Flask, jsonify, Response, request
 from socket_service.socket_service import SockerService
 from routes.comment_route import register_comment_route
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from routes.health_check_route import register_health_check_route
+
+request_count = Counter('api_request_count', 'Total API Request Count', ['method', 'route', 'status'])
+request_latency = Histogram('api_request_latency_seconds', 'API latency', ['method', 'route', 'status'])
 
 log = LoggerApp()
 dbConn = DataBase()
@@ -33,9 +38,19 @@ socketInstance.register_all_sockets()
 if not dbConn.connect():
     dbConn.disconnect() 
 
-@app.route('/')
-def getAllMethods():
-    pass
+@app.before_request
+def before_request():
+    request.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    method = request.method
+    endpoint = request.endpoint or 'unknown'
+    statusEndpoint = str(response.status_code)
+    latency = time.time() - request.start_time
+    request_count.labels(method=method, route=endpoint, status=statusEndpoint).inc()
+    request_latency.labels(method=method, route=endpoint, status=statusEndpoint).observe(latency)
+    return response
 
 #Routes section
 register_auth_user(api)
