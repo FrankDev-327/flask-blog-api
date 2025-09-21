@@ -3,7 +3,6 @@ from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.post_model import PostModel 
 from models.comment_model import CommentModel
-from middleware.check_token import require_token
 from redis_serve.redis_service import RedisService
 from sqlalchemy import select, insert, update, delete
 
@@ -14,7 +13,6 @@ class PostService:
         self.logger = LoggerApp()
         self.redisService = RedisService()
 
-    @require_token
     def getPostById(self, post_id):
         try:
             stmt = (select(PostModel).where(PostModel.id == post_id))
@@ -33,7 +31,6 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error gettting post {str(e)}'})
             return {'message': f'Error gettting post: {str(e)}'}, 500
     
-    @require_token
     def listAllCommentByPostId(self, post_id):
         try:
             stmt = (
@@ -76,7 +73,6 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error listing post {str(e)}'})
             return {'message': f'Error listing post: {str(e)}'}, 500
 
-    @require_token
     def getAllPosts(self):
         try:
             keyPost = 'allPost'
@@ -103,7 +99,6 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error listing post {str(e)}'})
             return {'message': f'Error listing post: {str(e)}'}, 500
 
-    @require_token
     def createPost(self, postBody):
         if not postBody or 'title' not in postBody or 'content' not in postBody or 'user_id' not in postBody:
             self.logger.logErrorInfo({'messerrorMsgage': 'Title, content, and user_id required'})
@@ -139,7 +134,6 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error creating post {str(e)}'})
             return {'message': f'Error creating post: {str(e)}'}, 500
 
-    @require_token
     def updatePost(self, post_id, post_body):
         try:
             post = self.getPostById(post_id)
@@ -176,6 +170,5 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error updating post {str(e)}'})
             return {'message': f'Error updating post: {str(e)}'}, 500
        
-    @require_token
     def delete(self, post_id):
         return {'message': 'Post deleted', 'post_id': post_id}, 204

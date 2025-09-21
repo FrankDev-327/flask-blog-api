@@ -1,4 +1,5 @@
 from base_resource import BaseResource 
+from middleware.check_token import require_token
 from services.post_service import PostService
 
 class PostGetDetailsController(BaseResource):
@@ -8,5 +9,6 @@ class PostGetDetailsController(BaseResource):
         super().__init__()
         self.post_service = PostService()
         
+    @require_token
     def getPostById(self, post_id):
         return self.post_service.getPostById(post_id)

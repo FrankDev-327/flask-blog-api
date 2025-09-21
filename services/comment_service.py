@@ -1,10 +1,7 @@
 from connection import db
 from utils.helpers import Helper
 from logger.logging import LoggerApp
-from services.user_service import UserService
-from services.post_service import PostService
 from models.comment_model import CommentModel 
-from middleware.check_token import require_token
 from sqlalchemy import select, insert, delete, update
 
 helper = Helper()
@@ -13,8 +10,7 @@ class CommentService:
     def __init__(self):
         self.logger = LoggerApp()
         self.comment_model = CommentModel
-
-    @require_token
+    
     def createComment(self, commentBody):
         if not commentBody or 'content' not in commentBody or 'user_id' not in commentBody or not 'post_id' in commentBody:
             return {'message': 'Content and user_id and post_id required'}, 400 
@@ -49,7 +45,6 @@ class CommentService:
             db.session.rollback() 
             return {'message': f'Error creating comment: {str(e)}'}, 500
 
-    @require_token
     def getCommentById(self, comment_id):
         try:
             stmt = (select(CommentModel).where(CommentModel.id == comment_id))
@@ -68,7 +63,6 @@ class CommentService:
             db.session.rollback() 
             return {'message': f'Error getting details comment: {str(e)}'}, 500
 
-    @require_token
     def updateComment(self, comment_id, commentBody):
         if not isinstance(commentBody, dict):
             return {'message': 'Invalid request body format'}, 400
@@ -102,6 +96,5 @@ class CommentService:
             db.session.rollback() 
             return {'message': f'Error updating comment: {str(e)}'}, 500
 
-    @require_token
     def delete(self, comment_id):
         return {'message': 'Comment deleted', 'comment_id': comment_id}, 204
