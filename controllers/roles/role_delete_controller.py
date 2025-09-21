@@ -2,10 +2,8 @@ from base_resource import BaseResource
 from services.role_service import RoleService
 from middleware.check_token import require_token, check_user_role
 
-class RoleController(BaseResource):
-    method_map = {
-        'POST': 'assignRoToUser',
-    }
+class RoleDeleteController(BaseResource):
+    method_map = { 'DELETE': 'removeRoleFromUser' }
     
     def __init__(self):
         super().__init__()
@@ -13,5 +11,5 @@ class RoleController(BaseResource):
         
     @require_token
     @check_user_role
-    def assignRoToUser(self, roleBody):
-        return self.role_service.assignRoToUser(roleBody)
+    def removeRoleFromUser(self, roleBody):
+        return self.role_service.removeRoleFromUser(roleBody)

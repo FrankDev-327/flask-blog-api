@@ -12,7 +12,6 @@ class UserService:
         self.helper = Helper()
         self.queries = Query()
         self.logger = LoggerApp()
-        self.user_model = UserModel
 
     def getAllUsers(self):
         stmt = select(UserModel)
@@ -56,7 +55,7 @@ class UserService:
         user = db.session.execute(stmt).scalar_one_or_none()
         if user:
             return True
-        return 
+        return None
     
     def checkExistinUser(self, userBody):
         try:
