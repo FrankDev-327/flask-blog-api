@@ -5,10 +5,10 @@ from flask_restful import Resource
 class BaseResource(Resource):
     """A Resource that routes HTTP verbs to custom-named handler methods."""
     
-    method_map = {}  # override this in subclasses
+    #method_map = {}  # override this in subclasses
 
     def dispatch_request(self, *args, **kwargs):
-        # Get the name of the handler function from the method_map
+    
         handler_name = self.method_map.get(request.method)
         if not handler_name:
             return {"message": "Method not allowed"}, 405
