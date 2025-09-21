@@ -12,7 +12,6 @@ class UserService:
         self.helper = Helper()
         self.queries = Query()
         self.logger = LoggerApp()
-        self.user_model = UserModel
 
     def getAllUsers(self):
         stmt = select(UserModel)

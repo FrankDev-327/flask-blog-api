@@ -3,16 +3,16 @@ from connection import db
 from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.post_model import PostModel 
+from models.comment_model import CommentModel
 from middleware.check_token import require_token
 from redis_serve.redis_service import RedisService
-from sqlalchemy import select, insert, update, delete, join
+from sqlalchemy import select, insert, update, delete
 
 helper = Helper()
 
 class PostService:
     def __init__(self):
         self.logger = LoggerApp()
-        self.post_model = PostModel
         self.redisService = RedisService()
 
     @require_token
@@ -28,29 +28,76 @@ class PostService:
                 "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
             }, 200
         return {'message': 'Post not found'}, 404
+    
+    @require_token
+    def listAllCommentByPostId(self, post_id):
+        try:
+            stmt = (
+                select(
+                    PostModel.id,
+                    PostModel.title,
+                    CommentModel.id,
+                    CommentModel.content,
+                    CommentModel.created_at,
+                    CommentModel.updated_at
+                )
+                .join(PostModel.comments)
+                .where(PostModel.id == post_id)
+            )
+
+            result = db.session.execute(stmt).all()
+            if not result:
+                return {"message": "Post not found"}, 404
+
+            post_id, post_title, _, _, _, _ = result[0]
+            post_dict = {
+                "id": post_id,
+                "title": post_title,
+                "comments": []
+            }
+
+            for row in result:
+                _, _, comment_id, content, created_at, updated_at = row
+                comment_dict = {
+                    "id": comment_id,
+                    "content": content,
+                    "created_at": helper.formatting_time(created_at,"%Y-%m-%d %H:%M:%S"),
+                    "updated_at": helper.formatting_time(updated_at,"%Y-%m-%d %H:%M:%S")
+                }
+                
+                post_dict["comments"].append(comment_dict)
+            return {"message": "List of comments", "post": post_dict}, 200
+        except Exception as e:
+            db.session.rollback()  
+            self.logger.logErrorInfo({'messerrorMsgage':  f'Error listing post {str(e)}'})
+            return {'message': f'Error listing post: {str(e)}'}, 500
 
     @require_token
     def getAllPosts(self):
-        keyPost = 'allPost'
-        postsFromRedis = self.redisService.getTemporalInfo(keyPost)
-        if postsFromRedis is not None:
-            return postsFromRedis, 200
+        try:
+            keyPost = 'allPost'
+            postsFromRedis = self.redisService.getTemporalInfo(keyPost)
+            if postsFromRedis is not None:
+                return {"message": "List of posts", "post": postsFromRedis}, 200
 
-        
-        posts = db.session.execute(select(PostModel)).scalars().all()
-        post_list = []
-        for post in posts:
-            post_dict = {
-                "id": post.id,
-                "title": post.title,
-                "content": post.content,
-                "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
-                "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
-            }
-            post_list.append(post_dict)
-        
-        self.redisService.setTemporalInfo(keyPost, json.dumps(post_list))
-        return {"message": "List of posts", "posts": post_list}, 200
+            posts = db.session.execute(select(PostModel)).scalars().all()
+            post_list = []
+            for post in posts:
+                post_dict = {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
+                    "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
+                }
+                post_list.append(post_dict)
+            
+            self.redisService.setTemporalInfo(keyPost, post_list)
+            return {"message": "List of posts", "posts": post_list}, 200
+        except Exception as e:
+            db.session.rollback()  
+            self.logger.logErrorInfo({'messerrorMsgage':  f'Error listing post {str(e)}'})
+            return {'message': f'Error listing post: {str(e)}'}, 500
 
     @require_token
     def createPost(self, postBody):
@@ -60,11 +107,11 @@ class PostService:
         
         try:
             stmt = (
-                insert(self.post_model).values(
+                insert(PostModel).values(
                     title=postBody['title'],
                     content=postBody['content'],
                     user_id=postBody['user_id']
-                ).returning(self.post_model)
+                ).returning(PostModel)
             )
         
             result = db.session.execute(stmt)

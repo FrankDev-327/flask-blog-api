@@ -17,7 +17,7 @@ class RedisService:
     def getTemporalInfo(self, key):
         data = self.redis.get(key)
         if data is not None:
-            return json.load(data)
+            return json.loads(data)
         return None
 
     def storeChatStream(self, chatBody):
