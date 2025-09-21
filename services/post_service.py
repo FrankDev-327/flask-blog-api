@@ -1,10 +1,11 @@
+import math
 from connection import db  
 from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.post_model import PostModel 
 from models.comment_model import CommentModel
 from redis_serve.redis_service import RedisService
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import func, select, insert, update, delete
 
 helper = Helper()
 
@@ -31,7 +32,7 @@ class PostService:
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error gettting post {str(e)}'})
             return {'message': f'Error gettting post: {str(e)}'}, 500
     
-    def listAllCommentByPostId(self, post_id):
+    def listAllCommentByPostId(self, post_id, page, per_page):
         try:
             stmt = (
                 select(
@@ -44,11 +45,16 @@ class PostService:
                 )
                 .join(PostModel.comments)
                 .where(PostModel.id == post_id)
+                .limit(per_page)
+                .offset((page - 1) * per_page)
             )
 
             result = db.session.execute(stmt).all()
             if not result:
                 return {"message": "Post not found"}, 404
+            
+            total_comments = db.session.execute(select(func.count()).select_from(CommentModel)).scalar_one()  #db.session.query(CommentModel).filter(CommentModel.post_id == post_id).count()
+            total_pages = (total_comments + per_page - 1)
 
             post_id, post_title, _, _, _, _ = result[0]
             post_dict = {
@@ -67,37 +73,67 @@ class PostService:
                 }
                 
                 post_dict["comments"].append(comment_dict)
-            return {"message": "List of comments", "post": post_dict}, 200
+                
+            return {
+                "message": "List of comments of a post", 
+                "post": post_dict,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total_comments": total_comments,
+                    "total_pages": total_pages
+                }
+            }, 200
         except Exception as e:
             db.session.rollback()  
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error listing post {str(e)}'})
             return {'message': f'Error listing post: {str(e)}'}, 500
 
-    def getAllPosts(self):
+    def getAllPosts(self, page, per_page):
         try:
-            keyPost = 'allPost'
+            keyPost = f'allPost:page{page}:per{per_page}'
             postsFromRedis = self.redisService.getTemporalInfo(keyPost)
             if postsFromRedis is not None:
-                return {"message": "List of posts", "post": postsFromRedis}, 200
+                return {"message": "List of posts", "posts": postsFromRedis}, 200
 
-            posts = db.session.execute(select(PostModel)).scalars().all()
-            post_list = []
-            for post in posts:
-                post_dict = {
+            stmt = (
+                select(PostModel)
+                .limit(per_page)
+                .offset((page - 1) * per_page)
+            )
+
+            posts = db.session.execute(stmt).scalars().all()
+            post_list = [
+                {
                     "id": post.id,
                     "title": post.title,
                     "content": post.content,
                     "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
-                    "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
+                    "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S"),
                 }
-                post_list.append(post_dict)
+                for post in posts
+            ]
+
+            total_posts = db.session.execute(select(func.count()).select_from(PostModel)).scalar_one()        
+            total_pages = math.ceil(total_posts / per_page)
+            post_redis = {
+                "message": "List of posts",
+                "posts": post_list,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total_posts": total_posts,
+                    "total_pages": total_pages,
+                },
+            }
             
-            self.redisService.setTemporalInfo(keyPost, post_list)
-            return {"message": "List of posts", "posts": post_list}, 200
+            self.redisService.setTemporalInfo(keyPost, post_redis)
+            return post_redis, 200
         except Exception as e:
-            db.session.rollback()  
-            self.logger.logErrorInfo({'messerrorMsgage':  f'Error listing post {str(e)}'})
+            db.session.rollback()
+            self.logger.logErrorInfo({'errorMessage': f'Error listing post {str(e)}'})
             return {'message': f'Error listing post: {str(e)}'}, 500
+
 
     def createPost(self, postBody):
         if not postBody or 'title' not in postBody or 'content' not in postBody or 'user_id' not in postBody:

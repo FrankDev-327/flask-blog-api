@@ -1,3 +1,4 @@
+from flask_restful import request
 from base_resource import BaseResource
 from middleware.check_token import require_token
 from services.post_service import PostService
@@ -11,4 +12,6 @@ class PostListComments(BaseResource):
         
     @require_token
     def listAllCommentByPostId(self, post_id):
-        return self.post_service.listAllCommentByPostId(post_id)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        return self.post_service.listAllCommentByPostId(post_id, page, per_page)
