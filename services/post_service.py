@@ -1,4 +1,3 @@
-import json
 from connection import db  
 from utils.helpers import Helper
 from logger.logging import LoggerApp
@@ -17,17 +16,22 @@ class PostService:
 
     @require_token
     def getPostById(self, post_id):
-        stmt = (select(PostModel).where(PostModel.id == post_id))
-        post = db.session.execute(stmt).scalar_one_or_none()
-        if post:
-            return {
-                "id": post.id,
-                "title": post.title,
-                "content": post.content,
-                "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
-                "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
-            }, 200
-        return {'message': 'Post not found'}, 404
+        try:
+            stmt = (select(PostModel).where(PostModel.id == post_id))
+            post = db.session.execute(stmt).scalar_one_or_none()
+            if post:
+                return {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
+                    "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S")
+                }, 200
+            return {'message': 'Post not found'}, 404
+        except Exception as e:
+            db.session.rollback()  
+            self.logger.logErrorInfo({'messerrorMsgage':  f'Error gettting post {str(e)}'})
+            return {'message': f'Error gettting post: {str(e)}'}, 500
     
     @require_token
     def listAllCommentByPostId(self, post_id):
@@ -136,9 +140,42 @@ class PostService:
             return {'message': f'Error creating post: {str(e)}'}, 500
 
     @require_token
-    def put(self, post_id):
-        return {'message': 'Post updated', 'post_id': post_id}, 200
+    def updatePost(self, post_id, post_body):
+        try:
+            post = self.getPostById(post_id)
+            if not post:
+                return {'message': 'Post not found'}, 404
+            
+            stmt = (
+                update(PostModel)
+                .values(
+                    title=post_body['title'],
+                    content=post_body['content'],
+                )
+                .returning(PostModel)
+            )
 
+            result = db.session.execute(stmt)
+            row = result.fetchone()
+            db.session.commit()       
+            new_post = row[0]
+            
+            return {
+                "message": "Post created",
+                "post": {
+                    "id": new_post.id,
+                    "title": new_post.title,
+                    "content": new_post.content,
+                    "user_id": new_post.user_id,
+                    "created_at": helper.formatting_time(new_post.created_at, "%Y-%m-%d %H:%M:%S"),
+                    "updated_at": helper.formatting_time(new_post.updated_at, "%Y-%m-%d %H:%M:%S")
+                },
+            }, 200
+        except Exception as e:
+            db.session.rollback()  
+            self.logger.logErrorInfo({'messerrorMsgage':  f'Error updating post {str(e)}'})
+            return {'message': f'Error updating post: {str(e)}'}, 500
+       
     @require_token
     def delete(self, post_id):
         return {'message': 'Post deleted', 'post_id': post_id}, 204

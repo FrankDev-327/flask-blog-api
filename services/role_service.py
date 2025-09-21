@@ -1,64 +1,84 @@
-import json
 from connection import db 
 from logger.logging import LoggerApp
 from models.role_model import RoleModel
+from sqlalchemy import insert, select, delete, update
 
 class RoleService:
     def __init__(self):
         self.logger = LoggerApp()   
         self.role_model = RoleModel
-        
+    
     def assignRoToUser(self, roleBody):
         if not roleBody or 'role_name'  not in roleBody or 'user_id' not in roleBody:
             self.logger.logErrorInfo({'message': 'Role name required'})
             return {'message': 'Role name required'}, 400  
         
-        new_role = self.role_model(role_name=roleBody['role_name'], user_id=roleBody['user_id'])
+        existRole = self._checkUserHasRole(roleBody)
+        if existRole:
+            return {'message': 'User was already assigned to this role'}, 400  
+        
         try:
-            db.session.add(new_role)
+            stmt = (
+                insert(RoleModel)
+                .values(
+                    role_name=roleBody['role_name'], 
+                    user_id=roleBody['user_id']
+                ).returning(RoleModel)
+            )
+
+            result = db.session.execute(stmt)
+            row = result.fetchone()
             db.session.commit()       
-            return {'message': 'Role created', 'role': new_role.to_dict()}, 201
+            role_assigned = row[0]
+            
+            return {
+                'message': 'Role created', 
+                'role': {
+                    "id": role_assigned.id,
+                    "role_name": role_assigned.role_name,
+                    "user_id":role_assigned.user_id
+                    }
+            }, 201
         except Exception as e:
             db.session.rollback()  
             self.logger.logErrorInfo({'message':  'Error creating role'})
             return {'message': f'Error creating role: {str(e)}'}, 500
     
+    def _checkUserHasRole(self,roleBody):
+        try:
+            stmt = (
+                select(RoleModel)
+                .where(RoleModel.user_id==roleBody['user_id'])
+                .where(RoleModel.role_name==roleBody['role_name'])
+            )
+            roleUser = db.session.execute(stmt).scalar_one_or_none()
+            if roleUser: return True
+        except Exception as e:
+            db.session.rollback()  
+            self.logger.logErrorInfo({'message':  'Error creating role'})
+            return {'message': f'Error creating role: {str(e)}'}, 500
+            
     def removeRoleFromUser(self, roleBody):
         if not roleBody or 'role_name'  not in roleBody or 'user_id' not in roleBody:
             self.logger.logErrorInfo({'message': 'Role name and user ID required'})
             return {'message': 'Role name and user ID required'}, 400  
         
         try:
-            role = self.role_model.query.filter_by(role_name=roleBody['role_name'], user_id=roleBody['user_id']).first()
-            if not role:
-                self.logger.logErrorInfo({'message': 'Role not found for the user'})
-                return {'message': 'Role not found for the user'}, 404
+            existRole = self._checkUserHasRole(roleBody)
+            if not existRole:
+                return {'message': 'Ths user does not have any role assigned'}, 400  
+
+            stmt = (
+                delete(RoleModel)
+                .where(RoleModel.user_id==roleBody['user_id'])
+                .where(RoleModel.role_name==roleBody['role_name'])
+                .returning(RoleModel)
+            )
             
-            db.session.delete(role)
+            db.session.execute(stmt)
             db.session.commit()       
-            return {'message': 'Role removed from user'}, 200
+            return { 'message': 'Role for the user was deleted' }, 201
         except Exception as e:
             db.session.rollback()  
             self.logger.logErrorInfo({'message':  'Error removing role from user'})
             return {'message': f'Error removing role from user: {str(e)}'}, 500
-        
-    def updateRoleFromUser(self, role_id, roleBody):
-        if not roleBody or 'role_name'  not in roleBody:
-            self.logger.logErrorInfo({'message': 'Role name required'})
-            return {'message': 'Role name required'}, 400  
-        
-        try:
-            role = self.role_model.query.get(role_id)
-            if not role:
-                self.logger.logErrorInfo({'message': 'Role not found'})
-                return {'message': 'Role not found'}, 404
-            
-            role.role_name = roleBody['role_name']
-            db.session.commit()       
-            return {'message': 'Role updated', 'role': role.to_dict()}, 200
-        except Exception as e:
-            db.session.rollback()  
-            self.logger.logErrorInfo({'message':  'Error updating role'})
-            return {'message': f'Error updating role: {str(e)}'}, 500
-        
-    

@@ -16,7 +16,7 @@ class BaseResource(Resource):
         handler_func = getattr(self, handler_name)
 
         # Handle POST and PUT requests with a JSON body
-        if request.method in ["POST", "PUT"]:
+        if request.method in ["POST", "PUT", "DELETE"]:
             data = request.get_json(force=True, silent=True) or {}
             
             # Use inspect to get the parameter names of the handler function.

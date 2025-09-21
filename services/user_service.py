@@ -55,7 +55,7 @@ class UserService:
         user = db.session.execute(stmt).scalar_one_or_none()
         if user:
             return True
-        return 
+        return None
     
     def checkExistinUser(self, userBody):
         try:
