@@ -31,6 +31,30 @@ class PostService:
             db.session.rollback()  
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error gettting post {str(e)}'})
             return {'message': f'Error gettting post: {str(e)}'}, 500
+        
+    def get_post_by_title(self, post_title):
+        try:
+            stmt = (select(PostModel).where(PostModel.title.like(f"%{post_title}%")))
+            posts = db.session.execute(stmt).scalars().all()
+            post_list = [
+                {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": helper.formatting_time(post.created_at, "%Y-%m-%d %H:%M:%S"),
+                    "updated_at": helper.formatting_time(post.updated_at, "%Y-%m-%d %H:%M:%S"),
+                }
+                for post in posts
+            ]
+            
+            return {
+                    'message': 'List of posts',
+                    'post': post_list
+                }, 200
+        except Exception as e:
+            db.session.rollback()  
+            self.logger.logErrorInfo({'messerrorMsgage':  f'Error gettting post byt title {str(e)}'})
+            return {'message': f'Error gettting post byt title: {str(e)}'}, 500
     
     def listAllCommentByPostId(self, post_id, page, per_page):
         try:
