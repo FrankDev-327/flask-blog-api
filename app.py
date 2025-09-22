@@ -1,6 +1,7 @@
 import os
 
 import time
+from flasgger import Swagger
 from flask_restful import Api
 from utils.helpers import bcrypt
 from logger.logging import LoggerApp
@@ -24,6 +25,7 @@ request_latency = Histogram('api_request_latency_seconds', 'API latency', ['meth
 log = LoggerApp()
 dbConn = DataBase()
 app = Flask(__name__)
+swagger = Swagger(app)
 bcrypt.init_app(app)
 socketInstance = SockerService(app)
 socketio = socketInstance.getSocketInstanceServer()

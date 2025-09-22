@@ -6,7 +6,13 @@ class LoggerApp():
         self.loggerInfo = logging.getLogger(__name__)
         self.loggerError = logging.getLogger(__name__)
         if os.getenv('ENV_APP') == 'development':
-            logging.basicConfig(filename='api.log', filemode="w", format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+            logging.basicConfig(
+                filename='api.log', 
+                filemode="w", 
+                format='%(asctime)s - %(levelname)s - %(message)s', 
+                datefmt='%Y-%m-%d %H:%M:%S', 
+                level=logging.INFO
+            )
         
     def initLoggerInstance(self):
         if os.getenv('ENV_APP') == 'development':
