@@ -12,6 +12,25 @@ class UserService:
         self.helper = Helper()
         self.queries = Query()
         self.logger = LoggerApp()
+        
+    def get_users_to_mention(self, users):
+        try:
+            stmt = (
+                select(UserModel.id, UserModel.name)
+                .where(UserModel.name.in_(users))
+                )
+            users = db.session.execute(stmt).scalars().all()
+            users_mentioned = [
+                {
+                    "id": user.id,
+                    "name": user.pygame.freetype.name
+                } for user in users
+            ] 
+            
+            return users_mentioned
+        except Exception as e:
+            self.logger.logErrorInfo({'getUserByIdOrAll ': str(e)})
+            return {'message': f'Error retrieving user: {str(e)}'}, 500
 
     def getAllUsers(self):
         stmt = select(UserModel)

@@ -3,13 +3,14 @@ from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.comment_model import CommentModel 
 from sqlalchemy import select, insert, delete, update
+from services.mention_user_service import MentionService
 
 helper = Helper()
 
 class CommentService:
     def __init__(self):
         self.logger = LoggerApp()
-        self.comment_model = CommentModel
+        self.mention_service = MentionService()
     
     def createComment(self, commentBody):
         if not commentBody or 'content' not in commentBody or 'user_id' not in commentBody or not 'post_id' in commentBody:
@@ -29,6 +30,7 @@ class CommentService:
             row = result.fetchone()
             db.session.commit()       
             new_comment = row[0]
+            self.mention_service.create_mention(new_comment.content, new_comment.id)
             
             return {
                 'message': 'Comment created', 
@@ -43,7 +45,7 @@ class CommentService:
             }, 201
         except Exception as e:
             db.session.rollback() 
-            return {'message': f'Error creating comment: {str(e)}'}, 500
+            #return {'message': f'Error creating comment: {str(e)}'}, 500
 
     def getCommentById(self, comment_id):
         try:

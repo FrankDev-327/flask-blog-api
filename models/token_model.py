@@ -1,7 +1,6 @@
-from serializabel_mixin import SerializableMixin
 from connection import db 
 
-class TokenModel(db.Model, SerializableMixin):
+class TokenModel(db.Model):
     __tablename__ = 'tokens'
     
     id = db.Column(db.Integer, primary_key=True)

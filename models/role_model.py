@@ -1,7 +1,6 @@
-from serializabel_mixin import SerializableMixin
 from connection import db 
 
-class RoleModel(db.Model, SerializableMixin):
+class RoleModel(db.Model):
     __tablename__ = 'roles'
     
     id = db.Column(db.Integer, primary_key=True)

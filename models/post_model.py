@@ -1,7 +1,6 @@
-from serializabel_mixin import SerializableMixin
-from connection import db  # Importing the db instance from connection.py
+from connection import db
 
-class PostModel(db.Model, SerializableMixin):
+class PostModel(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)

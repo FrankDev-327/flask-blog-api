@@ -24,7 +24,7 @@ def require_token(func):
             abort(401, description="Token has been marked as used in blacklist")
             
         try:
-            payload = jwt.decode(token, os.getenv('SECRET_KEY'), do_time_check=True, algorithms=['HS256'])
+            payload = jwt.decode(existToken['token'], os.getenv('SECRET_KEY'), do_time_check=True, algorithms=['HS256'])
             request.user = payload
         except jwt.ExpiredSignatureError:
             LoggerApp.logErrorInfo({'errorMsg': 'Token expired'})
@@ -50,7 +50,7 @@ def check_user_role(func):
 
 def generateToken(userBody):
     try:
-        user, status = userBody
+        user, _ = userBody
         payload = {
             "id": user['id'],
             "name": user['name'],

@@ -1,7 +1,6 @@
-from serializabel_mixin import SerializableMixin
-from connection import db  # Importing the db instance from connection.py
+from connection import db 
 
-class CommentModel(db.Model, SerializableMixin):
+class CommentModel(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)

@@ -1,6 +1,8 @@
+import re
 from flask_bcrypt import Bcrypt
 
 bcrypt = Bcrypt()
+MENTION_REGEX = r"@([a-zA-Z0-9_]+)"
 
 class Helper:
     def __init__(self):
@@ -14,3 +16,8 @@ class Helper:
     
     def formatting_time(self, timeToBeFormatted, formatTime):
         return timeToBeFormatted.strftime(formatTime)
+    
+    def extract_mentions_from_content(text):
+        return re.findall(MENTION_REGEX, text)
+    
+    
