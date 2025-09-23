@@ -39,7 +39,7 @@ class RabbitMqService:
             routing_key=queue_name,
             body=message,
             properties=pika.BasicProperties(
-                    delivery_mode=2,  # make message persistent
+                    delivery_mode=2,
                 )
             )
             
@@ -56,7 +56,7 @@ class RabbitMqService:
         except pika.exceptions.ProbableAccessDeniedError as e:
             print("Access denied:", e)
             raise
-        except pika.exceptions.AMQPError as e:  # general AMQP error
+        except pika.exceptions.AMQPError as e:
             print("AMQPError:", e)
             raise
         except Exception as e:

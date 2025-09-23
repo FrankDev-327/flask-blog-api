@@ -11,6 +11,7 @@ from werkzeug.exceptions import HTTPException
 from routes.authentication.auth_user import register_auth_user
 from prometheus_client import Histogram, Counter
 from routes.roles.role_route import register_role_route
+from routes.mentions.mention_route import register_mentions_routes
 from routes.users.user_route import register_user_routes
 from routes.posts.post_route import register_post_routes
 from flask import Flask, jsonify, Response, request
@@ -57,10 +58,11 @@ def after_request(response):
 #Routes section
 register_auth_user(api)
 register_role_route(api)
-register_user_routes(api);
-register_post_routes(api);
-register_comment_route(api);
-register_health_check_route(api);
+register_user_routes(api)
+register_post_routes(api)
+register_comment_route(api)
+register_mentions_routes(api)
+register_health_check_route(api)
 
 @app.route("/metrics")
 def returnMetrics():
@@ -79,13 +81,12 @@ def handle_http_exception(e):
 def handle_all_exceptions(e):
     response = {
         "error": "Internal Server Error",
-        "type": type(e).__name__,  # show exception type
-        "message": str(e) or repr(e),  # fallback if str(e) is empty
+        "type": type(e).__name__, 
+        "message": str(e) or repr(e),
         "status": 500
     }
-    # Optional: print full stack trace to logs
+    
     print("".join(traceback.format_exception(None, e, e.__traceback__)))
-
     return jsonify(response), 500
 
 
