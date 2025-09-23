@@ -15,3 +15,4 @@ flask-bcrypt
 PyJWT
 prometheus-client
 flasgger
+pika

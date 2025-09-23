@@ -1,6 +1,6 @@
 import os
-
 import time
+import traceback
 from flasgger import Swagger
 from flask_restful import Api
 from utils.helpers import bcrypt
@@ -76,12 +76,18 @@ def handle_http_exception(e):
     return jsonify(response), e.code
 
 @app.errorhandler(Exception)
-def handle_exception(e):
+def handle_all_exceptions(e):
     response = {
         "error": "Internal Server Error",
-        "message": str(e),
+        "type": type(e).__name__,  # show exception type
+        "message": str(e) or repr(e),  # fallback if str(e) is empty
         "status": 500
     }
+    # Optional: print full stack trace to logs
+    print("".join(traceback.format_exception(None, e, e.__traceback__)))
+
     return jsonify(response), 500
+
+
 
 
