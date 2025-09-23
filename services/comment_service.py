@@ -82,7 +82,7 @@ class CommentService:
             row = result.fetchone()
             db.session.commit()       
             updated_comment = row[0]
-            
+            self.mention_service.create_mention(updated_comment.content, comment_id)
             return {
                 'message': 'Comment updated', 
                 'comment': {

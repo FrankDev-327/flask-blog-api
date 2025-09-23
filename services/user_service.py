@@ -13,17 +13,17 @@ class UserService:
         self.queries = Query()
         self.logger = LoggerApp()
         
-    def get_users_to_mention(self, users):
+    def get_users_to_mention(self, users_from_content):
         try:
             stmt = (
                 select(UserModel.id, UserModel.name)
-                .where(UserModel.name.in_(users))
+                .where(UserModel.name.in_(users_from_content))
                 )
-            users = db.session.execute(stmt).scalars().all()
+            users = db.session.execute(stmt).all()
             users_mentioned = [
                 {
                     "id": user.id,
-                    "name": user.pygame.freetype.name
+                    "name": user.name
                 } for user in users
             ] 
             

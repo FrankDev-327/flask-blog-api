@@ -17,7 +17,7 @@ class Helper:
     def formatting_time(self, timeToBeFormatted, formatTime):
         return timeToBeFormatted.strftime(formatTime)
     
-    def extract_mentions_from_content(text):
+    def extract_mentions_from_content(self, text):
         return re.findall(MENTION_REGEX, text)
     
     
