@@ -1,13 +1,12 @@
 from connection import db
 from flask import jsonify
 from utils.helpers import Helper
-from sqlalchemy.orm import aliased
 from logger.logging import LoggerApp
 from sqlalchemy import insert, select
 from models.comment_model import CommentModel
 from services.user_service import UserService
 from models.mentions_model import MentionModel
-#from services.rabbit_mq_service import RabbitMqService
+from services.rabbit_mq_service import RabbitMqService
 
 helper = Helper()
 
@@ -15,32 +14,32 @@ class MentionService:
     def __init__(self):
         self.logger = LoggerApp()
         self.user_service = UserService()
-        #self.rabbit_service = RabbitMqService()
+        self.rabbit_service = RabbitMqService()
         
     def create_mention(self, content, comment_id):
         try:
+            bulk_insert = []
             users_mentioned = helper.extract_mentions_from_content(content)
             users = self.user_service.get_users_to_mention(users_mentioned)
 
             for mention_user in users:
-                stmt = (
-                    insert(MentionModel)
-                    .values(
-                        comment_id=comment_id,
-                        mentioned_user_id=mention_user['id']
-                    ) 
+                mention_to_insert = MentionModel(
+                    comment_id=comment_id,
+                    mentioned_user_id=mention_user['id']
                 )
-                db.session.execute(stmt)
-                db.session.commit()
-                
+                bulk_insert.append(mention_to_insert)           
+
+            db.session.bulk_save_objects(bulk_insert)
+            db.session.commit()
+            
             data = {
                 "comment_id": comment_id,
                 "content": content,
                 "mentions": [user['name'] for user in users]
             }
             
-            """ self.rabbit_service.publish("mention_comment_notification", data)
-            self.rabbit_service.close() """
+            self.rabbit_service.publish("mention_comment_notification", data)
+            #self.rabbit_service.close()
         except Exception as e:
             db.session.rollback() 
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error creating mentioned {str(e)}'})

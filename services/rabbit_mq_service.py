@@ -3,7 +3,6 @@ import pika
 
 class RabbitMqService:
     def __init__(self):
-        print(os.getenv('RABBITMQ_HOST'))
         self.user = os.getenv('RABBITMQ_USER', 'guest')
         self.password = os.getenv('RABBITMQ_PASSWORD', 'guest')
         self.host = os.getenv('RABBITMQ_HOST', 'rabbitmq')
