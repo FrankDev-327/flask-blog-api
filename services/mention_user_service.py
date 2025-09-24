@@ -6,7 +6,7 @@ from sqlalchemy import insert, select
 from models.comment_model import CommentModel
 from services.user_service import UserService
 from models.mentions_model import MentionModel
-from services.rabbit_mq_service import RabbitMqService
+from redis_serve.redis_service import RedisService
 
 helper = Helper()
 
@@ -14,7 +14,7 @@ class MentionService:
     def __init__(self):
         self.logger = LoggerApp()
         self.user_service = UserService()
-        self.rabbit_service = RabbitMqService()
+        self.redis_service = RedisService()
         
     def create_mention(self, content, comment_id):
         try:
@@ -33,13 +33,14 @@ class MentionService:
             db.session.commit()
             
             data = {
-                "comment_id": comment_id,
                 "content": content,
-                "mentions": [user['name'] for user in users]
+                "type": "notification",
+                "comment_id": comment_id,
+                "mentions": [user['name'] for user in users],
+                "user_ids": [user['id'] for user in users]
             }
             
-            self.rabbit_service.publish("mention_comment_notification", data)
-            #self.rabbit_service.close()
+            self.redis_service.publish('mention_comment_notification', data)
         except Exception as e:
             db.session.rollback() 
             self.logger.logErrorInfo({'messerrorMsgage':  f'Error creating mentioned {str(e)}'})

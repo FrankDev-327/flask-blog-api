@@ -37,6 +37,7 @@ init_db(app)
 init_migrate(app)
 log.initLoggerInstance()
 socketInstance.register_all_sockets()
+socketInstance.start_redis_listener()
 
 if not dbConn.connect():
     dbConn.disconnect() 

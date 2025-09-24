@@ -1,11 +1,13 @@
 import os
 import jwt
 import time
+import json
+from threading import Thread
 from flask import request, abort
 from logger.logging import LoggerApp
 from prometheus_client import Gauge, Histogram
 from services.token_service import TokenService
-from services.rabbit_mq_service import RabbitMqService
+from redis_serve.redis_service import RedisService
 from flask_socketio import SocketIO, ConnectionRefusedError
 
 request_latency = Histogram('socket_request_latency_seconds', 'Socket Request latency', ['event'])
@@ -13,32 +15,55 @@ request_gauge = Gauge('socket_active_connections', 'Number of active socket conn
 
 class SockerService:
     def __init__(self, appInstance):
-        self.user_conn = []
+        self.user_conn = {}
         self.logger = LoggerApp()
         self.token_service = TokenService()
-        #self.rabbit_service = RabbitMqService()
+        self.redis_service = RedisService()
         self.socket = SocketIO(appInstance, cors_allowed_origins="*")
                 
     def getSocketInstanceServer(self):
         return self.socket
     
-    """ def callback(ch, method, properties, body):
-        print(f"Received {body}") """    
+    def start_redis_listener(self):
+        def listen():
+            pubsub = self.redis_service.subscribe("mention_comment_notification")
+            for message in pubsub.listen():
+                if message['type'] == 'message':
+                    try:
+                        data = json.loads(message['data'])
+                        user_ids = data.get("user_ids", [])
+                        if not user_ids:
+                            self.logger.logInfoServer("No user_ids in message, broadcasting to all")
+                            self.socket.emit("notification", data)
+                            continue
+
+                        for user_id in user_ids:
+                            if user_id in self.user_conn:
+                                sid = self.user_conn[user_id]
+                                self.socket.emit("notification", data, to=sid)
+                            else:
+                                self.logger.logInfoServer(f"User {user_id} not connected, skipping")
+                        
+                    except Exception as e:
+                        self.logger.logErrorInfo({"errorMsgRedis": str(e)})
+
+        thread = Thread(target=listen, daemon=True)
+        thread.start()
+
     
     def register_all_sockets(self):
-
         @self.socket.on('connect')
         def init_connection(auth):
-            token = request.args.get('token')
-            check_token = self.token_service.getTokenById(token)
-
-            if check_token is None:
-                request_gauge.dec()
-                raise ConnectionRefusedError('unauthorized!')
-            elif check_token.get('marked_as_used'):
-                raise ConnectionRefusedError('Token has been marked as used in blacklist!')
-             
             try:
+                token = request.args.get('token')
+                check_token = self.token_service.getTokenById(token)
+
+                if check_token is None:
+                    request_gauge.dec()
+                    raise ConnectionRefusedError('unauthorized!')
+                elif check_token.get('marked_as_used'):
+                    raise ConnectionRefusedError('Token has been marked as used in blacklist!')
+             
                 payload = jwt.decode(
                     check_token['token'], 
                     os.getenv('SECRET_KEY'), 
@@ -57,11 +82,13 @@ class SockerService:
                 self.token_service.createToken(token, marked_as_used=True)
                 self.logger.logErrorInfo({'errorMsg': 'Invalid token'})
                 raise ConnectionRefusedError('Invalid token!')
-                       
-        #self.rabbit_service.consume('mention_comment_notification', self.callback)  
-            
+                        
         @self.socket.on('disconnect')
         def init_disconnection(reason):
+            for user_id, sid in list(self.user_conn.items()):
+                if sid == request.sid:
+                    del self.user_conn[user_id]
+                    break
             request_gauge.dec()
 
         @self.socket.on('message')
@@ -70,7 +97,5 @@ class SockerService:
             latency = time.time() - startTime
             request_latency.labels(event='message').observe(latency)
             self.socket.emit('message', {'message': data}, to=request.sid)
-
-    def callback(ch, method, properties, body):
-        print(body)
+            
         
