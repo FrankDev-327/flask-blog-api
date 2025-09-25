@@ -4,6 +4,7 @@ class CommentModel(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
@@ -12,3 +13,4 @@ class CommentModel(db.Model):
 
     post = db.relationship('PostModel', back_populates='comments')
     user = db.relationship('UserModel', back_populates='comments')
+    parent = db.relationship('CommentModel', remote_side=[id], backref='children')
