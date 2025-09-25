@@ -30,23 +30,28 @@ class NotificationService:
             
     def list_user_notifications(self, user_id):
         try:
+            subs_time = self.helper.formatting_time("", "%Y-%m-%d %H:%M:%S", "subs_time")
             stmt = (
                 select(
                     NotificationModel.comment_id,
+                    NotificationModel.created_at,
                     NotificationModel.type_notification,
-                    NotificationModel.notification_preview
+                    NotificationModel.notification_preview,
                     )
                 .where(NotificationModel.user_mentioned_id==user_id)
+                .where(db.func.date(NotificationModel.created_at) >= subs_time)
+                .distinct(NotificationModel.comment_id)
             )
-            
+   
             notitications = db.session.execute(stmt).all()
             notification_dict = [
                 {
-                    "comment_id": notitication.comment_id,
-                    "type_notification": notitication.type_notification,
-                    "notification_preview": notitication.notification_preview,
+                    "comment_id": notification.comment_id,
+                    "type_notification": notification.type_notification,
+                    "notification_preview": notification.notification_preview,
+                    "created_at": self.helper.formatting_time(notification.created_at, "%Y-%m-%d %H:%M:%S"),
                 }
-                for notitication in notitications
+                for notification in notitications
             ]
             
             return {
