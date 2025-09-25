@@ -14,6 +14,7 @@ from routes.roles.role_route import register_role_route
 from routes.mentions.mention_route import register_mentions_routes
 from routes.users.user_route import register_user_routes
 from routes.posts.post_route import register_post_routes
+from routes.notifications.notification_route import register_notifications_route
 from flask import Flask, jsonify, Response, request
 from socket_service.socket_service import SockerService
 from routes.comments.comment_route import register_comment_route
@@ -64,6 +65,7 @@ register_post_routes(api)
 register_comment_route(api)
 register_mentions_routes(api)
 register_health_check_route(api)
+register_notifications_route(api)
 
 @app.route("/metrics")
 def returnMetrics():

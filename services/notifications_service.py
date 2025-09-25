@@ -28,9 +28,31 @@ class NotificationService:
             db.session.rollback() 
             self.logger.logErrorInfo(f"Error create_notification: {str(e)}")
             
-    def list_user_notifications(self):
+    def list_user_notifications(self, user_id):
         try:
-            pass
+            stmt = (
+                select(
+                    NotificationModel.comment_id,
+                    NotificationModel.type_notification,
+                    NotificationModel.notification_preview
+                    )
+                .where(NotificationModel.user_mentioned_id==user_id)
+            )
+            
+            notitications = db.session.execute(stmt).all()
+            notification_dict = [
+                {
+                    "comment_id": notitication.comment_id,
+                    "type_notification": notitication.type_notification,
+                    "notification_preview": notitication.notification_preview,
+                }
+                for notitication in notitications
+            ]
+            
+            return {
+                "message": "List of notifications",
+                "notifications": notification_dict
+            }, 200
         except Exception as e:
             db.session.rollback() 
             self.logger.logErrorInfo(f"Error list_user_notifications: {str(e)}")
