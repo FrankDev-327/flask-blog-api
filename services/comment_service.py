@@ -17,11 +17,13 @@ class CommentService:
             return {'message': 'Content and user_id and post_id required'}, 400 
          
         try:    
+            parent_comment_id = commentBody.get('parent_id') or None
             stmt = (
                 insert(CommentModel).values(
                     content=commentBody['content'], 
                     user_id=commentBody['user_id'], 
-                    post_id=commentBody['post_id']
+                    post_id=commentBody['post_id'],
+                    parent_id=parent_comment_id
                 )
                 .returning(CommentModel)
             )
@@ -39,6 +41,7 @@ class CommentService:
                     "content": new_comment.content,
                     "post_id": new_comment.post_id,
                     "user_id": new_comment.user_id,
+                    "parent_id": new_comment.parent_id,
                     "created_at": helper.formatting_time(new_comment.created_at, "%Y-%m-%d %H:%M:%S"),
                     "updated_at": helper.formatting_time(new_comment.updated_at, "%Y-%m-%d %H:%M:%S")
                 }
