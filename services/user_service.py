@@ -2,7 +2,6 @@ from utils.helpers import Helper
 from flask import jsonify, request
 from connection import db  
 from sqlalchemy import select, join, insert
-from queries.session_query import Query
 from logger.logging import LoggerApp
 from models.user_model import UserModel 
 from models.role_model import RoleModel
@@ -10,7 +9,6 @@ from models.role_model import RoleModel
 class UserService:
     def __init__(self):
         self.helper = Helper()
-        self.queries = Query()
         self.logger = LoggerApp()
         
     def get_users_to_mention(self, users_from_content):

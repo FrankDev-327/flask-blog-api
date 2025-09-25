@@ -3,10 +3,21 @@ import redis
 import json
 
 class RedisService:
+    _instance = None
+    
     def __init__(self):
-        self.redis = redis.Redis(
-            host=os.getenv('REDIS_HOST'), 
-            port=os.getenv('REDIS_PORT'), 
+        pass
+        
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(RedisService, cls).__new__(cls)
+            cls._instance._init_connection()
+        return cls._instance
+
+    def _init_connection(self):
+        self.redis = redis.StrictRedis(
+            host=os.getenv("REDIS_HOST", "redis"),
+            port=int(os.getenv("REDIS_PORT", 6379)),
             decode_responses=True
         )
         
@@ -19,6 +30,16 @@ class RedisService:
         if data is not None:
             return json.loads(data)
         return None
+    
+    def publish(self, channel, message):
+        """Publish JSON message to a channel"""
+        self.redis.publish(channel, json.dumps(message))
+
+    def subscribe(self, channel):
+        """Subscribe to a channel and return the pubsub object"""
+        pubsub = self.redis.pubsub()
+        pubsub.subscribe(channel)
+        return pubsub
 
     def storeChatStream(self, chatBody):
         pass

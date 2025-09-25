@@ -77,7 +77,7 @@ class PostService:
             if not result:
                 return {"message": "Post not found"}, 404
             
-            total_comments = db.session.execute(select(func.count()).select_from(CommentModel)).scalar_one()  #db.session.query(CommentModel).filter(CommentModel.post_id == post_id).count()
+            total_comments = db.session.execute(select(func.count()).select_from(CommentModel)).scalar_one()
             total_pages = (total_comments + per_page - 1)
 
             post_id, post_title, _, _, _, _ = result[0]

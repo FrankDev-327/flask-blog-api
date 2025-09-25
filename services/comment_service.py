@@ -30,7 +30,7 @@ class CommentService:
             row = result.fetchone()
             db.session.commit()       
             new_comment = row[0]
-            self.mention_service.create_mention(new_comment.content, new_comment.id)
+            self.mention_service.create_mention(new_comment.content, new_comment.id, commentBody['user_mentioned_ids'])
             
             return {
                 'message': 'Comment created', 
@@ -45,7 +45,7 @@ class CommentService:
             }, 201
         except Exception as e:
             db.session.rollback() 
-            #return {'message': f'Error creating comment: {str(e)}'}, 500
+            return {'message': f'Error creating comment: {str(e)}'}, 500
 
     def getCommentById(self, comment_id):
         try:
@@ -82,7 +82,7 @@ class CommentService:
             row = result.fetchone()
             db.session.commit()       
             updated_comment = row[0]
-            self.mention_service.create_mention(updated_comment.content, comment_id)
+            self.mention_service.create_mention(updated_comment.content, comment_id, commentBody['user_mentioned_id'])
             return {
                 'message': 'Comment updated', 
                 'comment': {
