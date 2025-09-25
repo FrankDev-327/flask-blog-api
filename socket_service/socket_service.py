@@ -19,6 +19,7 @@ class SockerService:
         self.user_conn = {}
         self.logger = LoggerApp()
         self.app = appInstance
+        self.insert_notification = {}
         self.token_service = TokenService()
         self.redis_service = RedisService()
         self.notification_service = NotificationService()
@@ -31,17 +32,17 @@ class SockerService:
         def listen():
             with self.app.app_context():
                 pubsub = self.redis_service.subscribe("mention_comment_notification")
-                insert_notification = {}
                 try:
                     for message in pubsub.listen():
                         if message['type'] == 'message':  
                             data = json.loads(message['data'])
                             user_ids = data.get("user_ids", [])
                             for user_id in user_ids:
-                                insert_notification = {
+                                self.insert_notification = {
+                                    "user_mentioned_ids": user_ids,
+                                    "comment_id": data.get('comment_id'),
                                     "type_notification": data.get('type'),
                                     "notification_preview": data.get('content'),
-                                    "user_mentioned_ids": user_ids
                                 }
                                 
                                 if user_id in self.user_conn:
@@ -49,8 +50,8 @@ class SockerService:
                                     self.socket.emit(data.get('type'), data, to=sid)
                                 else:
                                     self.logger.logInfoServer(f"User {user_id} not connected, skipping")
-
-                    self.notification_service.create_notification(insert_notification)
+                                print(self.insert_notification)
+                                self.notification_service.create_notification(self.insert_notification)
                 except Exception as e:
                             self.logger.logErrorInfo({"errorMsgRedis": str(e)})
 
