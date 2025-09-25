@@ -50,8 +50,7 @@ class SockerService:
                                     self.socket.emit(data.get('type'), data, to=sid)
                                 else:
                                     self.logger.logInfoServer(f"User {user_id} not connected, skipping")
-                                print(self.insert_notification)
-                                self.notification_service.create_notification(self.insert_notification)
+                        self.notification_service.create_notification(self.insert_notification)
                 except Exception as e:
                             self.logger.logErrorInfo({"errorMsgRedis": str(e)})
 

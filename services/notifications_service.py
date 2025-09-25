@@ -12,7 +12,6 @@ class NotificationService:
         
     def create_notification(self, notification_body):
         try:
-            #print(notification_body)
             bulk_insert = []
             for user_id in notification_body['user_mentioned_ids']:
                 notification_to_insert = NotificationModel(
@@ -23,7 +22,7 @@ class NotificationService:
                 )
                 bulk_insert.append(notification_to_insert)
   
-            db.session.execute(bulk_insert)
+            db.session.bulk_save_objects(bulk_insert)
             db.session.commit()
         except Exception as e:
             db.session.rollback() 
