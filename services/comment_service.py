@@ -1,5 +1,6 @@
 from connection import db
 from utils.helpers import Helper
+from sqlalchemy.orm import aliased
 from logger.logging import LoggerApp
 from models.comment_model import CommentModel 
 from sqlalchemy import select, insert, delete, update
@@ -54,16 +55,35 @@ class CommentService:
         try:
             stmt = (select(CommentModel).where(CommentModel.id == comment_id))
             comment = db.session.execute(stmt).scalar_one_or_none()
-            if comment:
-                return {
-                    "id": comment.id,
-                    "content": comment.content,
-                    "post_id": comment.post_id,
-                    "user_id": comment.user_id,
-                    "created_at": helper.formatting_time(comment.created_at, "%Y-%m-%d %H:%M:%S"),
-                    "updated_at": helper.formatting_time(comment.updated_at, "%Y-%m-%d %H:%M:%S")
-                }, 200
-            return {'message': 'Comment not found'}, 404
+            if not comment:
+                return {'message': 'Comment not found'}, 404
+            
+            ChildComment = aliased(CommentModel)
+            stmt_children = (
+                select(ChildComment)
+                .join(CommentModel, ChildComment.parent_id == CommentModel.id)
+                .where(CommentModel.id == comment_id)
+            )
+            children_comments = db.session.execute(stmt_children).scalars().all()
+            return {
+                "id": comment.id,
+                "content": comment.content,
+                "post_id": comment.post_id,
+                "user_id": comment.user_id,
+                "created_at": helper.formatting_time(comment.created_at, "%Y-%m-%d %H:%M:%S"),
+                "updated_at": helper.formatting_time(comment.updated_at, "%Y-%m-%d %H:%M:%S"),
+                "children": [
+                    {
+                        "id": child.id,
+                        "content": child.content,
+                        "user_id": child.user_id,
+                        "parent_comment_id":comment_id,
+                        "created_at": helper.formatting_time(child.created_at, "%Y-%m-%d %H:%M:%S"),
+                        "updated_at": helper.formatting_time(child.updated_at, "%Y-%m-%d %H:%M:%S"),
+                    } for child in children_comments
+                ]
+            }, 200
+            
         except Exception as e:
             db.session.rollback() 
             return {'message': f'Error getting details comment: {str(e)}'}, 500
