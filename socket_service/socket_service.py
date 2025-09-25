@@ -9,6 +9,7 @@ from prometheus_client import Gauge, Histogram
 from services.token_service import TokenService
 from redis_serve.redis_service import RedisService
 from flask_socketio import SocketIO, ConnectionRefusedError
+from services.notifications_service import NotificationService
 
 request_latency = Histogram('socket_request_latency_seconds', 'Socket Request latency', ['event'])
 request_gauge = Gauge('socket_active_connections', 'Number of active socket connections')
@@ -17,8 +18,10 @@ class SockerService:
     def __init__(self, appInstance):
         self.user_conn = {}
         self.logger = LoggerApp()
+        self.app = appInstance
         self.token_service = TokenService()
         self.redis_service = RedisService()
+        self.notification_service = NotificationService()
         self.socket = SocketIO(appInstance, cors_allowed_origins="*")
                 
     def getSocketInstanceServer(self):
@@ -26,26 +29,30 @@ class SockerService:
     
     def start_redis_listener(self):
         def listen():
-            pubsub = self.redis_service.subscribe("mention_comment_notification")
-            for message in pubsub.listen():
-                if message['type'] == 'message':
-                    try:
-                        data = json.loads(message['data'])
-                        user_ids = data.get("user_ids", [])
-                        if not user_ids:
-                            self.logger.logInfoServer("No user_ids in message, broadcasting to all")
-                            self.socket.emit("notification", data)
-                            continue
+            with self.app.app_context():
+                pubsub = self.redis_service.subscribe("mention_comment_notification")
+                insert_notification = {}
+                try:
+                    for message in pubsub.listen():
+                        if message['type'] == 'message':  
+                            data = json.loads(message['data'])
+                            user_ids = data.get("user_ids", [])
+                            for user_id in user_ids:
+                                insert_notification = {
+                                    "type_notification": data.get('type'),
+                                    "notification_preview": data.get('content'),
+                                    "user_mentioned_ids": user_ids
+                                }
+                                
+                                if user_id in self.user_conn:
+                                    sid = self.user_conn[user_id]
+                                    self.socket.emit(data.get('type'), data, to=sid)
+                                else:
+                                    self.logger.logInfoServer(f"User {user_id} not connected, skipping")
 
-                        for user_id in user_ids:
-                            if user_id in self.user_conn:
-                                sid = self.user_conn[user_id]
-                                self.socket.emit("notification", data, to=sid)
-                            else:
-                                self.logger.logInfoServer(f"User {user_id} not connected, skipping")
-                        
-                    except Exception as e:
-                        self.logger.logErrorInfo({"errorMsgRedis": str(e)})
+                    self.notification_service.create_notification(insert_notification)
+                except Exception as e:
+                            self.logger.logErrorInfo({"errorMsgRedis": str(e)})
 
         thread = Thread(target=listen, daemon=True)
         thread.start()

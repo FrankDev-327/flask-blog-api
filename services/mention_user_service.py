@@ -16,16 +16,13 @@ class MentionService:
         self.user_service = UserService()
         self.redis_service = RedisService()
         
-    def create_mention(self, content, comment_id):
+    def create_mention(self, content, comment_id, user_mentioned_ids = []):
         try:
             bulk_insert = []
-            users_mentioned = helper.extract_mentions_from_content(content)
-            users = self.user_service.get_users_to_mention(users_mentioned)
-
-            for mention_user in users:
+            for mention_user_id in user_mentioned_ids:
                 mention_to_insert = MentionModel(
                     comment_id=comment_id,
-                    mentioned_user_id=mention_user['id']
+                    mentioned_user_id=mention_user_id
                 )
                 bulk_insert.append(mention_to_insert)           
 
@@ -36,8 +33,7 @@ class MentionService:
                 "content": content,
                 "type": "notification",
                 "comment_id": comment_id,
-                "mentions": [user['name'] for user in users],
-                "user_ids": [user['id'] for user in users]
+                "user_ids": user_mentioned_ids
             }
             
             self.redis_service.publish('mention_comment_notification', data)

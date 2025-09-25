@@ -5,5 +5,5 @@ class NotificationModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type_notification = db.Column(db.String(10), nullable=True)
     notification_preview = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user_mentioned_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     
