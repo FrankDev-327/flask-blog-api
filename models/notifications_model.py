@@ -1,9 +1,6 @@
 from connection import db 
 from datetime import datetime, timezone
 
-def default_date():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-
 class NotificationModel(db.Model):
     __tablename__ = "notifications"
     id = db.Column(db.Integer, primary_key=True)
