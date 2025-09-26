@@ -1,8 +1,10 @@
+import os
 import pytest
 import requests
 
 BASE_URL = "http://127.0.0.1:5000/api"
 
+@pytest.mark.order(1)
 def test_health_check_endpoint():
     response = requests.get(f"{BASE_URL}/health-check")
     assert response.status_code == 200
@@ -11,6 +13,7 @@ def test_health_check_endpoint():
     assert isinstance(data["message"], str)
     assert data["message"] == "OK"
     
+@pytest.mark.order(2)
 def test_auth_endpoint():
     response = requests.post(f"{BASE_URL}/auth", json={
         "password": "123456789",
@@ -24,3 +27,5 @@ def test_auth_endpoint():
     assert len(data["token"]) > 0
     parts = data["token"].split(".")
     assert len(parts) == 3
+    token_info_file = open("./token_test.txt", "w")
+    assert token_info_file.write(data["token"]) > 0
