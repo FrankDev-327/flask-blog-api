@@ -1,8 +1,10 @@
 import os
 import time
 import traceback
+from flask_cors import CORS
 from flasgger import Swagger
 from flask_restful import Api
+from dotenv import load_dotenv
 from utils.helpers import bcrypt
 from logger.logging import LoggerApp
 from connection import init_db, init_migrate 
@@ -21,10 +23,11 @@ from routes.comments.comment_route import register_comment_route
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from routes.health_check_route import register_health_check_route
 
+load_dotenv()
 request_count = Counter('api_request_count', 'Total API Request Count', ['method', 'route', 'status'])
 request_latency = Histogram('api_request_latency_seconds', 'API latency', ['method', 'route', 'status'])
 
-log = LoggerApp()
+logger = LoggerApp()
 dbConn = DataBase()
 app = Flask(__name__)
 swagger = Swagger(app)
@@ -34,9 +37,10 @@ socketio = socketInstance.getSocketInstanceServer()
 app.secret_key = os.getenv('SECRET_SESSION')
 api = Api(app, prefix="/api", default_mediatype='application/json', catch_all_404s=True)
 
+CORS(app)
 init_db(app)
 init_migrate(app)
-log.initLoggerInstance()
+logger.initLoggerInstance()
 socketInstance.register_all_sockets()
 socketInstance.start_redis_listener()
 
@@ -92,6 +96,7 @@ def handle_all_exceptions(e):
     print("".join(traceback.format_exception(None, e, e.__traceback__)))
     return jsonify(response), 500
 
-
-
+if __name__ == '__main__':
+    logger.logInfoServer('server starting...');
+    socketio.run(host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True)
 

@@ -1,5 +1,6 @@
 import pytest
 import requests
+from app import app, socketio
 
 @pytest.fixture(scope="session")
 def user_login():
@@ -46,3 +47,9 @@ def comment_data():
         "parent_id": 140,
         "user_mentioned_ids": [3, 13]
     }
+
+@pytest.fixture(scope="session")
+def socket_client(auth_token):
+    client = socketio.test_client(app, query_string=f"token={auth_token}")
+    yield client
+    client.disconnect()

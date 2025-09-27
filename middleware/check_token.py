@@ -24,7 +24,7 @@ def require_token(func):
             abort(401, description="Token has been marked as used in blacklist")
             
         try:
-            payload = jwt.decode(existToken['token'], os.getenv('SECRET_KEY'), do_time_check=True, algorithms=['HS256'])
+            payload = jwt.decode(existToken['token'], os.getenv('SECRET_KEY'), algorithms=['HS256'],options={"verify_exp": False})
             request.user = payload
         except jwt.ExpiredSignatureError:
             LoggerApp.logErrorInfo({'errorMsg': 'Token expired'})

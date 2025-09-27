@@ -18,3 +18,4 @@ flasgger
 pika
 pytest
 pytest-html
+python-socketio[client]
