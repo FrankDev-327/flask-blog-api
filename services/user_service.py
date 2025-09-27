@@ -1,7 +1,7 @@
 from utils.helpers import Helper
 from flask import jsonify, request
 from connection import db  
-from sqlalchemy import select, join, insert
+from sqlalchemy import select, join, insert, delete
 from logger.logging import LoggerApp
 from models.user_model import UserModel 
 from models.role_model import RoleModel
@@ -93,19 +93,20 @@ class UserService:
             if not comparePassword:
                 return {'message': 'user not found or wrong password'}, 404
 
+            userData = {
+                "id": user.id,
+                "name": user.name,
+                "nick_name": user.nick_name,
+                "email": user.email,
+                "roles": role.role_name, 
+            }
+        
+            return userData, 200
         except Exception as e: 
             self.logger.logErrorInfo({'checkExistinUser': str(e)})
             return {'message': f'Error checking user info: {str(e)}'}, 500
 
-        userData = {
-            "id": user.id,
-            "name": user.name,
-            "nick_name": user.nick_name,
-            "email": user.email,
-            "roles": role.role_name, 
-        }
         
-        return userData, 200
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:
@@ -134,5 +135,20 @@ class UserService:
     def put(self, user_id):
         return {'message': 'User updated', 'user_id': user_id}, 200
 
-    def delete(self, user_id):
-        return {'message': 'User deleted', 'user_id': user_id}, 204
+    def delete_user(self, user_body):
+        try:
+            stmt = (
+                delete(UserModel)
+                .where(UserModel.name==user_body['name'])
+                .where(UserModel.nick_name==user_body['nick_name'])
+                .returning(UserModel)
+            )
+            
+            db.session.execute(stmt)
+            db.session.commit()       
+            return { 'message': 'User was deleted' }, 201
+        except Exception as e:
+            db.session.rollback()     
+            self.logger.logErrorInfo({'delete user':str(e)})
+            return {'message': f'Error deleting user: {str(e)}'}, 500
+            

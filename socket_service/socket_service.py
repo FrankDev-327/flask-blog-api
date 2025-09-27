@@ -74,7 +74,6 @@ class SockerService:
                 payload = jwt.decode(
                     check_token['token'], 
                     os.getenv('SECRET_KEY'), 
-                    do_time_check=True, 
                     algorithms=['HS256']
                 )
                 request.user = payload
