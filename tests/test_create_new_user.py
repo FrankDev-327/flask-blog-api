@@ -10,4 +10,3 @@ def test_create_new_user(user_data, auth_token, api_url):
     assert "message" in data
     assert isinstance(data["message"], str)
     assert data["message"] == "User created"
-    
