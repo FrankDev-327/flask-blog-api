@@ -16,4 +16,6 @@ PyJWT
 prometheus-client
 flasgger
 pika
-
+pytest
+pytest-html
+python-socketio[client]
