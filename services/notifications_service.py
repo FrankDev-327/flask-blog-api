@@ -10,19 +10,20 @@ class NotificationService:
         self.helper = Helper()
         self.logger = LoggerApp()
         
-    def create_notification(self, notification_body):
+    def create_notification(self, user_id, comment_id, type_notification, notification_preview):
         try:
-            bulk_insert = []
-            for user_id in notification_body['user_mentioned_ids']:
-                notification_to_insert = NotificationModel(
+            print(notification_preview)
+            stmt = (
+                insert(NotificationModel)
+                .values(
                     user_mentioned_id=user_id,
-                    comment_id=notification_body['comment_id'],
-                    type_notification=notification_body['type_notification'],
-                    notification_preview=notification_body['notification_preview'][1:30],
+                    comment_id=comment_id,
+                    type_notification=type_notification,
+                    notification_preview=notification_preview[1:30],
                 )
-                bulk_insert.append(notification_to_insert)
-  
-            db.session.bulk_save_objects(bulk_insert)
+            )
+            
+            db.session.execute(stmt)
             db.session.commit()
         except Exception as e:
             db.session.rollback() 

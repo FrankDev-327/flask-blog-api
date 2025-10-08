@@ -32,8 +32,7 @@ dbConn = DataBase()
 app = Flask(__name__)
 swagger = Swagger(app)
 bcrypt.init_app(app)
-socketInstance = SockerService(app)
-socketio = socketInstance.getSocketInstanceServer()
+
 app.secret_key = os.getenv('SECRET_SESSION')
 api = Api(app, prefix="/api", default_mediatype='application/json', catch_all_404s=True)
 
@@ -41,8 +40,9 @@ CORS(app)
 init_db(app)
 init_migrate(app)
 logger.initLoggerInstance()
-socketInstance.register_all_sockets()
-socketInstance.start_redis_listener()
+socketInstance = SockerService(app)
+socketio = socketInstance.getSocketInstanceServer()
+
 
 if not dbConn.connect():
     dbConn.disconnect() 
@@ -97,6 +97,10 @@ def handle_all_exceptions(e):
     return jsonify(response), 500
 
 if __name__ == '__main__':
+    socketInstance.start_redis_listener()
+    socketInstance.register_all_sockets()
+    
+    
     logger.logInfoServer('server starting...');
-    socketio.run(host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True)
+    socketio.run(app, host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True)
 

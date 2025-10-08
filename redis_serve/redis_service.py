@@ -15,9 +15,11 @@ class RedisService:
         return cls._instance
 
     def _init_connection(self):
-        self.redis = redis.StrictRedis(
-            host=os.getenv("REDIS_HOST", "redis"),
-            port=int(os.getenv("REDIS_PORT", 6379)),
+        self.redis = redis.Redis(
+            host=os.getenv('REDIS_CLOUD_HOST'),
+            port=int(os.getenv('REDIS_CLOUD_PORT')),
+            username=os.getenv('REDIS_CLOUD_USERNAME'),
+            password=os.getenv('REDIS_CLOUD_PASSWORD'),
             decode_responses=True
         )
         

@@ -19,11 +19,10 @@ class SockerService:
         self.user_conn = {}
         self.logger = LoggerApp()
         self.app = appInstance
-        self.insert_notification = {}
         self.token_service = TokenService()
         self.redis_service = RedisService()
         self.notification_service = NotificationService()
-        self.socket = SocketIO(appInstance, cors_allowed_origins="*")
+        self.socket = SocketIO(appInstance, cors_allowed_origins="*", async_mode='threading')
                 
     def getSocketInstanceServer(self):
         return self.socket
@@ -32,32 +31,34 @@ class SockerService:
         def listen():
             with self.app.app_context():
                 pubsub = self.redis_service.subscribe("mention_comment_notification")
+                print(pubsub.listen())
                 try:
+                    
                     for message in pubsub.listen():
+                        print(message)
                         if message['type'] == 'message':  
                             data = json.loads(message['data'])
                             user_ids = data.get("user_ids", [])
                             for user_id in user_ids:
-                                self.insert_notification = {
-                                    "user_mentioned_ids": user_ids,
-                                    "comment_id": data.get('comment_id'),
-                                    "type_notification": data.get('type'),
-                                    "notification_preview": data.get('content'),
-                                }
-                                
+                               
+                                self.notification_service.create_notification(
+                                    user_id,
+                                    data.get('comment_id'),
+                                    data.get('type'),
+                                    data.get('content')
+                                )
                                 if user_id in self.user_conn:
                                     sid = self.user_conn[user_id]
                                     self.socket.emit(data.get('type'), data, to=sid)
                                 else:
                                     self.logger.logInfoServer(f"User {user_id} not connected, skipping")
-                        self.notification_service.create_notification(self.insert_notification)
+                        
                 except Exception as e:
-                            self.logger.logErrorInfo({"errorMsgRedis": str(e)})
+                    self.logger.logErrorInfo({"errorMsgRedis": str(e)})
 
         thread = Thread(target=listen, daemon=True)
         thread.start()
 
-    
     def register_all_sockets(self):
         @self.socket.on('connect')
         def init_connection(auth):
@@ -94,9 +95,9 @@ class SockerService:
             for user_id, sid in list(self.user_conn.items()):
                 if sid == request.sid:
                     del self.user_conn[user_id]
+                    request_gauge.dec()
                     break
-            request_gauge.dec()
-
+        
         @self.socket.on('message')
         def getClientMessages(data):
             startTime = time.time()
