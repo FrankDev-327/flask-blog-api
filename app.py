@@ -42,7 +42,8 @@ init_migrate(app)
 logger.initLoggerInstance()
 socketInstance = SockerService(app)
 socketio = socketInstance.getSocketInstanceServer()
-
+socketInstance.register_all_sockets()
+socketInstance.start_redis_listener()
 
 if not dbConn.connect():
     dbConn.disconnect() 
@@ -50,7 +51,7 @@ if not dbConn.connect():
 @app.before_request
 def before_request():
     request.start_time = time.time()
-
+  
 @app.after_request
 def after_request(response):
     method = request.method
@@ -97,10 +98,6 @@ def handle_all_exceptions(e):
     return jsonify(response), 500
 
 if __name__ == '__main__':
-    socketInstance.start_redis_listener()
-    socketInstance.register_all_sockets()
-    
-    
     logger.logInfoServer('server starting...');
-    socketio.run(app, host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True)
+    socketio.run(app, host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True, use_reloader=False)
 

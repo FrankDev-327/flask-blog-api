@@ -12,7 +12,6 @@ class NotificationService:
         
     def create_notification(self, user_id, comment_id, type_notification, notification_preview):
         try:
-            print(notification_preview)
             stmt = (
                 insert(NotificationModel)
                 .values(

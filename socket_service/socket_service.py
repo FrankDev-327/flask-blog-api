@@ -22,7 +22,7 @@ class SockerService:
         self.token_service = TokenService()
         self.redis_service = RedisService()
         self.notification_service = NotificationService()
-        self.socket = SocketIO(appInstance, cors_allowed_origins="*", async_mode='threading')
+        self.socket = SocketIO(appInstance, cors_allowed_origins="*")
                 
     def getSocketInstanceServer(self):
         return self.socket
@@ -31,11 +31,8 @@ class SockerService:
         def listen():
             with self.app.app_context():
                 pubsub = self.redis_service.subscribe("mention_comment_notification")
-                print(pubsub.listen())
                 try:
-                    
                     for message in pubsub.listen():
-                        print(message)
                         if message['type'] == 'message':  
                             data = json.loads(message['data'])
                             user_ids = data.get("user_ids", [])

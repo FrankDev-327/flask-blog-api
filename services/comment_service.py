@@ -33,7 +33,11 @@ class CommentService:
             row = result.fetchone()
             db.session.commit()       
             new_comment = row[0]
-            self.mention_service.create_mention(new_comment.content, new_comment.id, commentBody['user_mentioned_ids'])
+            self.mention_service.create_mention(
+                new_comment.content, 
+                new_comment.id, 
+                commentBody['user_mentioned_ids']
+            )
             
             return {
                 'message': 'Comment created', 
