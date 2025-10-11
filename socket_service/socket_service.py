@@ -10,6 +10,7 @@ from services.token_service import TokenService
 from redis_serve.redis_service import RedisService
 from flask_socketio import SocketIO, ConnectionRefusedError
 from services.notifications_service import NotificationService
+from services.private_message_service import PrivateMessageService
 
 request_latency = Histogram('socket_request_latency_seconds', 'Socket Request latency', ['event'])
 request_gauge = Gauge('socket_active_connections', 'Number of active socket connections')
@@ -22,6 +23,7 @@ class SockerService:
         self.token_service = TokenService()
         self.redis_service = RedisService()
         self.notification_service = NotificationService()
+        self.private_message_service = PrivateMessageService()
         self.socket = SocketIO(appInstance, cors_allowed_origins="*")
                 
     def getSocketInstanceServer(self):
@@ -37,7 +39,6 @@ class SockerService:
                             data = json.loads(message['data'])
                             user_ids = data.get("user_ids", [])
                             for user_id in user_ids:
-                               
                                 self.notification_service.create_notification(
                                     user_id,
                                     data.get('comment_id'),
@@ -49,7 +50,6 @@ class SockerService:
                                     self.socket.emit(data.get('type'), data, to=sid)
                                 else:
                                     self.logger.logInfoServer(f"User {user_id} not connected, skipping")
-                        
                 except Exception as e:
                     self.logger.logErrorInfo({"errorMsgRedis": str(e)})
 
@@ -99,6 +99,7 @@ class SockerService:
         def getClientMessages(data):
             startTime = time.time()
             latency = time.time() - startTime
+            self.private_message_service.save_private_message(data)
             request_latency.labels(event='message').observe(latency)
             self.socket.emit('message', {'message': data}, to=request.sid)
             
