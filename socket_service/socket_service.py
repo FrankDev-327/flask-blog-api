@@ -5,7 +5,7 @@ import json
 from threading import Thread
 from flask import request, abort
 from logger.logging import LoggerApp
-from prometheus_client import Gauge, Histogram
+from prometheus_client import Gauge, Histogram, Counter
 from services.token_service import TokenService
 from redis_serve.redis_service import RedisService
 from flask_socketio import SocketIO, ConnectionRefusedError
@@ -14,6 +14,7 @@ from services.private_message_service import PrivateMessageService
 
 request_latency = Histogram('socket_request_latency_seconds', 'Socket Request latency', ['event'])
 request_gauge = Gauge('socket_active_connections', 'Number of active socket connections')
+request_count_messages = Counter('messages_counter', 'Number of messages sent', ['count_messages'])
 
 class SockerService:
     def __init__(self, appInstance):
@@ -76,13 +77,13 @@ class SockerService:
                 )
                 request.user = payload
                 self.user_conn[request.user['id']] = request.sid
+                socket_user_key = f"socket_{request.user['id']}"
+                self.redis_service.setTemporalInfo(socket_user_key, payload, ttl=None)
                 request_gauge.inc()
             except jwt.ExpiredSignatureError:
-                request_gauge.dec()
                 self.logger.logErrorInfo({'errorMsg': 'Token expired'})
                 raise ConnectionRefusedError('Token expired!')
             except jwt.InvalidTokenError:
-                request_gauge.dec()
                 self.token_service.createToken(token, marked_as_used=True)
                 self.logger.logErrorInfo({'errorMsg': 'Invalid token'})
                 raise ConnectionRefusedError('Invalid token!')
@@ -91,8 +92,10 @@ class SockerService:
         def init_disconnection(reason):
             for user_id, sid in list(self.user_conn.items()):
                 if sid == request.sid:
-                    del self.user_conn[user_id]
                     request_gauge.dec()
+                    del self.user_conn[user_id]
+                    socket_user_key = f"socket_{user_id}"
+                    self.redis_service.deleteTemporalInfo(socket_user_key)
                     break
         
         @self.socket.on('message')
@@ -101,6 +104,7 @@ class SockerService:
             latency = time.time() - startTime
             self.private_message_service.save_private_message(data)
             request_latency.labels(event='message').observe(latency)
+            request_count_messages.labels(count_messages=1).inc()
             self.socket.emit('message', {'message': data}, to=request.sid)
             
         

@@ -16,6 +16,8 @@ from routes.roles.role_route import register_role_route
 from routes.mentions.mention_route import register_mentions_routes
 from routes.users.user_route import register_user_routes
 from routes.posts.post_route import register_post_routes
+from routes.interesting.interesting_route import register_interesting_route
+from routes.private_messages.private_messages_routes import register_private_messages_routes
 from routes.notifications.notification_route import register_notifications_route
 from flask import Flask, jsonify, Response, request
 from socket_service.socket_service import SockerService
@@ -69,8 +71,10 @@ register_user_routes(api)
 register_post_routes(api)
 register_comment_route(api)
 register_mentions_routes(api)
+register_interesting_route(api)
 register_health_check_route(api)
 register_notifications_route(api)
+register_private_messages_routes(api)
 
 @app.route("/metrics")
 def returnMetrics():
@@ -100,4 +104,3 @@ def handle_all_exceptions(e):
 if __name__ == '__main__':
     logger.logInfoServer('server starting...');
     socketio.run(app, host=os.getenv('HOST'), port=os.getenv('PORT'), debug=True, use_reloader=False)
-

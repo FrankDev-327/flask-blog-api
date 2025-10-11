@@ -1,4 +1,1 @@
 from .interesting_model import InterestingModel
-
-
-
