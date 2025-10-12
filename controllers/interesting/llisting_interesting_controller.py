@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from constants import list_interesting
+from constants.list_interesting import interesting_things as list_interesting
 from middleware.check_token import require_token
 
 class LListingInterestingController(Resource):
