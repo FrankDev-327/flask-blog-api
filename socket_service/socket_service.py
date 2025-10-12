@@ -31,7 +31,7 @@ class SockerService:
         return self.socket
     
     def start_redis_listener(self):
-        def listen():
+        def listen_user_mentioned():
             with self.app.app_context():
                 pubsub = self.redis_service.subscribe("mention_comment_notification")
                 try:
@@ -53,9 +53,35 @@ class SockerService:
                                     self.logger.logInfoServer(f"User {user_id} not connected, skipping")
                 except Exception as e:
                     self.logger.logErrorInfo({"errorMsgRedis": str(e)})
+                    
+        def friend_request_listener():
+            with self.app.app_context():
+                pubsub = self.redis_service.subscribe("friend_request_notification")
+                try:
+                    for message in pubsub.listen():
+                        if message['type'] == 'message':  
+                            data = json.loads(message['data'])
+                            user_id = data.get("contact_id")
+                            if user_id:
+                                self.notification_service.create_notification(
+                                    user_id,
+                                    data.get('contact_id'),
+                                    data.get('type'),
+                                    data.get('content')
+                                )
+                                if user_id in self.user_conn:
+                                    sid = self.user_conn[user_id]
+                                    self.socket.emit(data.get('type'), data, to=sid)
+                                else:
+                                    self.logger.logInfoServer(f"User {user_id} not connected, skipping")
+                except Exception as e:
+                    self.logger.logErrorInfo({"errorMsgRedis": str(e)}) 
 
-        thread = Thread(target=listen, daemon=True)
-        thread.start()
+        thread_to_listen = Thread(target=listen_user_mentioned, daemon=True)
+        thread_to_request_friend = Thread(target=friend_request_listener, daemon=True)
+        
+        thread_to_listen.start()
+        thread_to_request_friend.start()
 
     def register_all_sockets(self):
         @self.socket.on('connect')

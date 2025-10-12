@@ -36,3 +36,11 @@ class UserModel(db.Model):
         back_populates='user',
         lazy=True
     )
+    
+    # ✅ New relationship for contacts (friendships)
+    contacts = db.relationship(
+        'ContactsModel',
+        foreign_keys='ContactsModel.user_id',
+        back_populates='user',
+        lazy=True
+    )
