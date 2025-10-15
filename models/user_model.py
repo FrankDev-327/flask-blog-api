@@ -13,3 +13,34 @@ class UserModel(db.Model):
     posts = db.relationship('PostModel', back_populates='user', lazy=True)
     comments = db.relationship('CommentModel', back_populates='user', lazy=True)
     role = db.relationship('RoleModel', uselist=False) 
+
+    
+     # ✅ Add two distinct relationships for messages
+    sent_messages = db.relationship(
+        'PrivateMessageModel',
+        foreign_keys='PrivateMessageModel.sender_id',
+        back_populates='sender',
+        lazy=True
+    )
+
+    received_messages = db.relationship(
+        'PrivateMessageModel',
+        foreign_keys='PrivateMessageModel.receiver_id',
+        back_populates='receiver',
+        lazy=True
+    )
+
+    # ✅ Relationship with InterestingModel (one-to-many)
+    interesting_user = db.relationship(
+        'InterestingModel', 
+        back_populates='user',
+        lazy=True
+    )
+    
+    # ✅ New relationship for contacts (friendships)
+    contacts = db.relationship(
+        'ContactsModel',
+        foreign_keys='ContactsModel.user_id',
+        back_populates='user',
+        lazy=True
+    )

@@ -90,6 +90,7 @@ class UserService:
             comparePassword = self.helper.compareHashAndPlainText(
                 userBody['password'], user.password
             )
+
             if not comparePassword:
                 return {'message': 'user not found or wrong password'}, 404
 
@@ -105,8 +106,6 @@ class UserService:
         except Exception as e: 
             self.logger.logErrorInfo({'checkExistinUser': str(e)})
             return {'message': f'Error checking user info: {str(e)}'}, 500
-
-        
     
     def createUser(self, userBody):
         if not userBody or 'name' not in userBody or 'email' not in userBody:

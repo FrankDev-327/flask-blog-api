@@ -25,13 +25,19 @@ class RedisService:
         
     def setTemporalInfo(self, key, data, ttl=100):
         json_data = json.dumps(data)
-        self.redis.setex(key, ttl, json_data)
+        if ttl is None:
+            self.redis.set(key, json_data)
+        else:
+            self.redis.setex(key, ttl, json_data)
         
     def getTemporalInfo(self, key):
         data = self.redis.get(key)
         if data is not None:
             return json.loads(data)
         return None
+    
+    def deleteTemporalInfo(self, key):
+        self.redis.delete(key)
     
     def publish(self, channel, message):
         """Publish JSON message to a channel"""
