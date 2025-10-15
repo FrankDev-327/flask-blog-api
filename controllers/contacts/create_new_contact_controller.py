@@ -62,7 +62,7 @@ class CreateNewContactController(Resource):
               properties:
                 message:
                   type: string
-                  example: "user_id and contact_id are required" or "Contact already exists"
+                  example: user_id and contact_id are required" or Contact already exists
           500:
             description: Internal Server Error
             schema:
