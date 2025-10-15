@@ -34,6 +34,7 @@ class ContactService:
             db.session.commit()
             new_contact = result[0]
             notify_user_request = {
+                "request_id": new_contact.id,  
                 "contact_id": contact_id,
                 "type": "friend_request_notification",
                 "content": f"You have a new contact request from: {request.user['nick_name']}",
