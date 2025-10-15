@@ -73,7 +73,7 @@ class SockerService:
                                     sid = self.user_conn[user_id]
                                     self.socket.emit(data.get('type'), data, to=sid)
                                 else:
-                                    self.logger.logInfoServer(f"User {user_id} not connected, skipping")
+                                    self.logger.logInfoServer(f"User not connected, skipping")
                 except Exception as e:
                     self.logger.logErrorInfo({"errorMsgRedis": str(e)}) 
 

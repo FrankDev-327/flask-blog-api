@@ -24,7 +24,7 @@ class PrivateMessageService:
             
         except Exception as e:
             db.session.rollback() 
-            self.logger.error(f'Error saving private message: {str(e)}')
+            self.logger.logErrorInfo(f'Error saving private message: {str(e)}')
 
     def get_private_message_by_id(self, sender_id, receiver_id, page, per_page):
         try:

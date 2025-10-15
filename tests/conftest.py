@@ -13,6 +13,21 @@ def user_login():
 def api_url():
     return "http://127.0.0.1:5000/api"
 
+@pytest.fixture(scope='session')
+def create_new_interest():
+    return {
+        "interest_name":"Anal sex and using cum like lubricant to be fucked by a big black cock",
+        "description":"test_description"
+    }
+
+@pytest.fixture(scope='session')
+def messages_to_send():
+    return {
+        "content":"perra zorra de marisol bebedora de semen por el ano",
+        "sender_id": 3,
+        "receiver_id": 13
+    }
+
 @pytest.fixture(scope="session")
 def auth_token(user_login, api_url):
     response = requests.post(f"{api_url}/auth", json=user_login)
