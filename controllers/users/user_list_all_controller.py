@@ -2,11 +2,12 @@ from flask_restful import Resource
 from services.user_service import UserService
 from middleware.check_token import require_token, check_user_role
 
+
 class UserListController(Resource):
     def __init__(self):
         super().__init__()
         self.user_service = UserService()
-        
+
     @require_token
     @check_user_role
     def get(self):

@@ -2,11 +2,12 @@ from flask_restful import Resource, request
 from middleware.check_token import require_token
 from services.comment_service import CommentService
 
-class CommentController(Resource):    
+
+class CommentController(Resource):
     def __init__(self):
         super().__init__()
         self.comment_service = CommentService()
-    
+
     @require_token
     def post(self):
         """

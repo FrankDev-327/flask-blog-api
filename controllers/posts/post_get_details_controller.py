@@ -2,11 +2,12 @@ from flask_restful import Resource
 from middleware.check_token import require_token
 from services.post_service import PostService
 
-class PostGetDetailsController(Resource):    
+
+class PostGetDetailsController(Resource):
     def __init__(self):
         super().__init__()
         self.post_service = PostService()
-        
+
     @require_token
     def get(self, post_id):
         """

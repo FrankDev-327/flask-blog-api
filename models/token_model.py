@@ -1,8 +1,9 @@
-from connection import db 
+from connection import db
+
 
 class TokenModel(db.Model):
-    __tablename__ = 'tokens'
-    
+    __tablename__ = "tokens"
+
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.Text, nullable=False, unique=True)
     marked_as_used = db.Column(db.Boolean, default=False)

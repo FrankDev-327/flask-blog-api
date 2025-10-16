@@ -3,4 +3,4 @@ from controllers.mentions.mention_list_user_controller import MentionListUserCon
 
 
 def register_mentions_routes(api: Api):
-    api.add_resource(MentionListUserController, '/mentions', endpoint='mention_all')
+    api.add_resource(MentionListUserController, "/mentions", endpoint="mention_all")

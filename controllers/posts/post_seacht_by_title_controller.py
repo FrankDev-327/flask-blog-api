@@ -2,11 +2,12 @@ from flask_restful import Resource, request
 from services.post_service import PostService
 from middleware.check_token import require_token
 
+
 class PostGetSearchTitleController(Resource):
     def __init__(self):
         super().__init__()
         self.post_service = PostService()
-        
+
     @require_token
     def get(self):
         """
@@ -51,5 +52,5 @@ class PostGetSearchTitleController(Resource):
                         type: string
                         example: 2025-09-22 09:14:48
         """
-        title = request.args.get('title', '', type=str)
+        title = request.args.get("title", "", type=str)
         return self.post_service.get_post_by_title(title)

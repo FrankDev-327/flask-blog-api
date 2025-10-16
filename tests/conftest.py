@@ -2,34 +2,32 @@ import pytest
 import requests
 from app import app, socketio
 
-@pytest.fixture(scope="session")
-def user_login():
-    return {
-        "password": "123456789",
-        "nick_name": "test_user_20"
-    }
 
 @pytest.fixture(scope="session")
 def api_url():
     return "http://127.0.0.1:5000/api"
 
-@pytest.fixture(scope='session')
-def create_new_interest():
-    return {
-        "interest_name":"Anal sex and using cum like lubricant to be fucked by a big black cock",
-        "description":"test_description"
-    }
-
-@pytest.fixture(scope='session')
-def messages_to_send():
-    return {
-        "content":"perra zorra de marisol bebedora de semen por el ano",
-        "sender_id": 3,
-        "receiver_id": 13
-    }
 
 @pytest.fixture(scope="session")
-def auth_token(user_login, api_url):
+def create_new_interest():
+    return {
+        "interest_name": "perra zorra de marisol bebedora de semen por el ano",
+        "description": "test_description",
+    }
+
+
+@pytest.fixture(scope="session")
+def messages_to_send():
+    return {
+        "content": "perra zorra de marisol bebedora de semen por el ano",
+        "sender_id": 3,
+        "receiver_id": 13,
+    }
+
+
+@pytest.fixture(scope="session")
+def auth_token(api_url):
+    user_login = {"password": "123456789", "nick_name": "test_user_20"}
     response = requests.post(f"{api_url}/auth", json=user_login)
     assert response.status_code == 200
     assert len(response.json()["token"]) > 0
@@ -37,31 +35,16 @@ def auth_token(user_login, api_url):
     assert len(parts) == 3
     return response.json()["token"]
 
+
 @pytest.fixture(scope="session")
 def user_data():
     return {
         "name": "test_user_4444",
         "password": "123456789",
-        "nick_name":"test_nich_name_user_4444",
-        "email": "test_user_4444@test.com"
+        "nick_name": "test_nich_name_user_4444",
+        "email": "test_user_4444@test.com",
     }
-    
-@pytest.fixture(scope="session")
-def user_delete_data():
-    return {
-        "name": "test_user_4444",
-        "nick_name":"test_nich_name_user_4444",
-    }
-    
-@pytest.fixture(scope="session")
-def comment_data():
-    return {
-        "content": "@test_user_20 test extract user from content chiild",
-        "post_id": 1,
-        "user_id": 2,
-        "parent_id": 140,
-        "user_mentioned_ids": [3, 13]
-    }
+
 
 @pytest.fixture(scope="session")
 def socket_client(auth_token):

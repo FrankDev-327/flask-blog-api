@@ -1,46 +1,49 @@
 from connection import db
 
+
 class UserModel(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(255), nullable=True)
-    nick_name = db.Column(db.String(50,), nullable=True)
+    nick_name = db.Column(
+        db.String(
+            50,
+        ),
+        nullable=True,
+    )
     email = db.Column(db.String(120), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
-    posts = db.relationship('PostModel', back_populates='user', lazy=True)
-    comments = db.relationship('CommentModel', back_populates='user', lazy=True)
-    role = db.relationship('RoleModel', uselist=False) 
+    posts = db.relationship("PostModel", back_populates="user", lazy=True)
+    comments = db.relationship("CommentModel", back_populates="user", lazy=True)
+    role = db.relationship("RoleModel", uselist=False)
 
-    
-     # ✅ Add two distinct relationships for messages
+    # ✅ Add two distinct relationships for messages
     sent_messages = db.relationship(
-        'PrivateMessageModel',
-        foreign_keys='PrivateMessageModel.sender_id',
-        back_populates='sender',
-        lazy=True
+        "PrivateMessageModel",
+        foreign_keys="PrivateMessageModel.sender_id",
+        back_populates="sender",
+        lazy=True,
     )
 
     received_messages = db.relationship(
-        'PrivateMessageModel',
-        foreign_keys='PrivateMessageModel.receiver_id',
-        back_populates='receiver',
-        lazy=True
+        "PrivateMessageModel",
+        foreign_keys="PrivateMessageModel.receiver_id",
+        back_populates="receiver",
+        lazy=True,
     )
 
     # ✅ Relationship with InterestingModel (one-to-many)
     interesting_user = db.relationship(
-        'InterestingModel', 
-        back_populates='user',
-        lazy=True
+        "InterestingModel", back_populates="user", lazy=True
     )
-    
+
     # ✅ New relationship for contacts (friendships)
     contacts = db.relationship(
-        'ContactsModel',
-        foreign_keys='ContactsModel.user_id',
-        back_populates='user',
-        lazy=True
+        "ContactsModel",
+        foreign_keys="ContactsModel.user_id",
+        back_populates="user",
+        lazy=True,
     )

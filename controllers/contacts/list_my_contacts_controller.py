@@ -2,6 +2,7 @@ from flask_restful import Resource, request
 from middleware.check_token import require_token
 from services.contact_service import ContactService
 
+
 class ListMyContactsControler(Resource):
     def __init__(self):
         super().__init__()
@@ -49,5 +50,5 @@ class ListMyContactsControler(Resource):
           500:
             description: Internal server error
         """
-        user_id = request.user['id']
+        user_id = request.user["id"]
         return self.contact_service.get_contacts(user_id)
