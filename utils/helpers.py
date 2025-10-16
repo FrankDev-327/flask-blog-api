@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 bcrypt = Bcrypt()
 MENTION_REGEX = r"@([a-zA-Z0-9_]+)"
+ALLOWED_EXTENSIONS = {'txt', 'png', 'gif'}
 
 
 class Helper:
@@ -28,3 +29,7 @@ class Helper:
 
     def extract_mentions_from_content(self, text):
         return re.findall(MENTION_REGEX, text)
+
+    def allowed_file(filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

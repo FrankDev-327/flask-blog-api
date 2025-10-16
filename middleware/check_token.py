@@ -2,10 +2,12 @@ import os
 import jwt
 from functools import wraps
 from flask import request, abort
+from utils.helpers import Helper
 from logger.logging import LoggerApp
 from services.token_service import TokenService
 from datetime import datetime, timedelta, timezone
 
+helper = Helper()
 LoggerApp = LoggerApp()
 tokenService = TokenService()
 

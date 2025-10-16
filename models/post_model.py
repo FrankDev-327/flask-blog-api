@@ -12,5 +12,10 @@ class PostModel(db.Model):
 
     user = db.relationship(
         "UserModel", back_populates="posts", lazy=True
-    )  # ✅ corrected
+    )
+
+    images = db.relationship(
+        "ImagesModel", back_populates="post", lazy=True
+    )
+
     comments = db.relationship("CommentModel", back_populates="post", lazy=True)
