@@ -1,7 +1,7 @@
 import os
 import jwt
 from functools import wraps
-from flask import request, abort, jsonify
+from flask import request, abort
 from logger.logging import LoggerApp
 from services.token_service import TokenService
 from datetime import datetime, timedelta, timezone

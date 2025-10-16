@@ -4,7 +4,7 @@ from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.contacts_model import ContactsModel
 from redis_serve.redis_service import RedisService
-from sqlalchemy import select, insert, delete, update
+from sqlalchemy import select, insert
 
 
 class ContactService:
@@ -31,11 +31,12 @@ class ContactService:
             result = db.session.execute(stmt).fetchone()
             db.session.commit()
             new_contact = result[0]
+            nick_name = request.user["nick_name"]
             notify_user_request = {
                 "request_id": new_contact.id,
                 "contact_id": contact_id,
                 "type": "friend_request_notification",
-                "content": f"You have a new contact request from: {request.user['nick_name']}",
+                "content": f"You have a new contact request from: {nick_name}",
             }
 
             self.redis_service.publish(

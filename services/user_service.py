@@ -1,7 +1,6 @@
 from utils.helpers import Helper
-from flask import jsonify, request
 from connection import db
-from sqlalchemy import select, join, insert, delete
+from sqlalchemy import select, insert, delete
 from logger.logging import LoggerApp
 from models.user_model import UserModel
 from models.role_model import RoleModel

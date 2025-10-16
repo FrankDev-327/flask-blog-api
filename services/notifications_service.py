@@ -1,5 +1,4 @@
 from connection import db
-from flask import jsonify
 from utils.helpers import Helper
 from logger.logging import LoggerApp
 from sqlalchemy import insert, select

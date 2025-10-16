@@ -1,5 +1,5 @@
 [flake8]
-max-line-length = 88
+max-line-length = 127
 extend-ignore = E203, W503
 exclude =
     .git,
@@ -8,3 +8,5 @@ exclude =
     dist,
     migrations
     api-flask-venv
+    ./models/__init__.py
+    ./*/__init__.py

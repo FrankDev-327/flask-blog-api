@@ -1,5 +1,4 @@
 from connection import db
-from connection import db
 
 
 class MentionModel(db.Model):

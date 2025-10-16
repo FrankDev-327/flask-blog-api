@@ -2,7 +2,7 @@ from connection import db
 from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.user_model import UserModel
-from sqlalchemy import select, insert, delete, update
+from sqlalchemy import select, insert
 from models.interesting_model import InterestingModel
 
 

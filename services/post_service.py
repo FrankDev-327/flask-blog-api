@@ -5,7 +5,7 @@ from logger.logging import LoggerApp
 from models.post_model import PostModel
 from models.comment_model import CommentModel
 from redis_serve.redis_service import RedisService
-from sqlalchemy import func, select, insert, update, delete
+from sqlalchemy import func, select, insert, update
 
 helper = Helper()
 

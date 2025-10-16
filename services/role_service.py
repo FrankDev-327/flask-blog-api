@@ -1,7 +1,7 @@
 from connection import db
 from logger.logging import LoggerApp
 from models.role_model import RoleModel
-from sqlalchemy import insert, select, delete, update
+from sqlalchemy import insert, select, delete
 
 
 class RoleService:

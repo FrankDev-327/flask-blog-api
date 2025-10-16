@@ -1,8 +1,7 @@
 from connection import db
-from flask import jsonify
 from utils.helpers import Helper
 from logger.logging import LoggerApp
-from sqlalchemy import insert, select
+from sqlalchemy import select
 from models.comment_model import CommentModel
 from services.user_service import UserService
 from models.mentions_model import MentionModel

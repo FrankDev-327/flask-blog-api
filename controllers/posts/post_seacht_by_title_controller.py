@@ -44,7 +44,7 @@ class PostGetSearchTitleController(Resource):
                         example: marisol_zorra_bebedora_de_semen_por_el_ano
                       content:
                         type: string
-                        example: bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa jerioth se bebia mi semen por el ano y a veces se lo echaba en la cara o se lo tragaba toda la leche
+                        example: bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa...
                       created_at:
                         type: string
                         example: 2025-09-22 09:14:48

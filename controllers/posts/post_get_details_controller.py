@@ -35,7 +35,7 @@ class PostGetDetailsController(Resource):
                   example: "test_post_1"
                 content:
                   type: string
-                  example: "jerioth se bebia mi semen por el ano y a veces se lo echaba en la cara o se lo tragaba toda la leche"
+                  example: "jerioth se bebia mi semen por el ano y a veces se lo echaba..."
                 created_at:
                   type: string
                   format: date-time

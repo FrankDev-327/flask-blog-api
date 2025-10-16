@@ -31,7 +31,7 @@ class PostCreateController(Resource):
                   example: "test_post_1000"
                 content:
                   type: string
-                  example: "bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa jerioth se bebia mi semen por el ano y a veces se lo echaba en la cara o se lo tragaba toda la leche"
+                  example: "bebedora de semen no dejaba nada de leche de mi verga..."
                 user_id:
                   type: integer
                   example: 1
@@ -55,7 +55,7 @@ class PostCreateController(Resource):
                       example: "test_post_1000"
                     content:
                       type: string
-                      example: "bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa jerioth se bebia mi semen por el ano y a veces se lo echaba en la cara o se lo tragaba toda la leche"
+                      example: "bebedora de semen no dejaba nada de leche de mi verga..."
                     user_id:
                       type: integer
                       example: 1

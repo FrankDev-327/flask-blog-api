@@ -1,7 +1,7 @@
 from connection import db
 from utils.helpers import Helper
 from logger.logging import LoggerApp
-from sqlalchemy import select, insert, delete, update
+from sqlalchemy import select, insert
 from models.private_message_model import PrivateMessageModel
 
 

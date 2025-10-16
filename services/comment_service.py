@@ -3,7 +3,7 @@ from utils.helpers import Helper
 from sqlalchemy.orm import aliased
 from logger.logging import LoggerApp
 from models.comment_model import CommentModel
-from sqlalchemy import select, insert, delete, update
+from sqlalchemy import select, insert, update
 from services.mention_user_service import MentionService
 
 helper = Helper()
@@ -19,7 +19,7 @@ class CommentService:
             not commentBody
             or "content" not in commentBody
             or "user_id" not in commentBody
-            or not "post_id" in commentBody
+            or "post_id" not in commentBody
         ):
             return {"message": "Content and user_id and post_id required"}, 400
 

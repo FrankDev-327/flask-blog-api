@@ -1,7 +1,7 @@
 import os
 import pika
 import time
-from pika.exceptions import AMQPConnectionError, AMQPChannelError
+from pika.exceptions import AMQPConnectionError
 
 
 class RabbitMqService:
@@ -62,7 +62,7 @@ class RabbitMqService:
             if not self.channel:
                 self.logger.logErrorInfo(
                     {
-                        "messerrorMsgage": f"Connection is not established raised:  {str(e)}"
+                        "messerrorMsgage": "Connection is not established raised: publish rabbit}"
                     }
                 )
                 raise Exception("Connection is not established.")

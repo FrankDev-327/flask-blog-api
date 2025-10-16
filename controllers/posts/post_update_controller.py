@@ -35,7 +35,7 @@ class PostUpdateController(Resource):
                   example: "test_post_100000000"
                 content:
                   type: string
-                  example: "bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa jerioth se bebia mi semen por el ano y a veces se lo echaba en la cara o se lo tragaba toda la leche"
+                  example: "bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa..."
         responses:
           200:
             description: Post updated successfully
@@ -56,7 +56,7 @@ class PostUpdateController(Resource):
                       example: "test_post_100000000"
                     content:
                       type: string
-                      example: "bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra puta golfa jerioth se bebia mi semen por el ano y a veces se lo echaba en la cara o se lo tragaba toda la leche"
+                      example: "bebedora de semen no dejaba nada de leche de mi verga.. toda tragada perra zorra..."
                     user_id:
                       type: integer
                       example: 1

@@ -32,7 +32,7 @@ class CommentGetDetailsController(Resource):
                   example: 6
                 content:
                   type: string
-                  example: "baño de semen en el ano de marisol sexo anal en el ano de marisol y despues de dejarle el ano super abierto llenarselo de bastante leche y maria se beba la leche desde el ano de marisol y despues se besen"
+                  example: "baño de semen en el ano de marisol sexo anal en el ano de marisol y ..."
                 post_id:
                   type: integer
                   example: 1

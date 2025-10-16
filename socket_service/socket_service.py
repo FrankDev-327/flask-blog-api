@@ -3,7 +3,7 @@ import jwt
 import time
 import json
 from threading import Thread
-from flask import request, abort
+from flask import request
 from logger.logging import LoggerApp
 from prometheus_client import Gauge, Histogram, Counter
 from services.token_service import TokenService
@@ -83,7 +83,7 @@ class SockerService:
                                     self.socket.emit(data.get("type"), data, to=sid)
                                 else:
                                     self.logger.logInfoServer(
-                                        f"User not connected, skipping"
+                                        "User not connected, skipping"
                                     )
                 except Exception as e:
                     self.logger.logErrorInfo({"errorMsgRedis": str(e)})

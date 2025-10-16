@@ -20,4 +20,3 @@ def test_delete_user(user_delete_data, auth_token, api_url):
     data = response.json()
     assert isinstance(data["message"], str)
     assert data["message"] == "User was deleted"
-    

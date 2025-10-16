@@ -9,6 +9,7 @@ __pycache__/
 *.pyd
 *.pyc
 api-flask-venv/
+.pytest_cache
 
 # IDEs
 .vscode/
