@@ -2,11 +2,12 @@ from flask_restful import Resource, request
 from middleware.check_token import require_token
 from services.notifications_service import NotificationService
 
+
 class NotificationController(Resource):
     def __init__(self):
         super().__init__()
         self.notification_service = NotificationService()
-        
+
     @require_token
     def get(self):
         """
@@ -49,5 +50,5 @@ class NotificationController(Resource):
           500:
             description: Internal server error
         """
-        user_id = request.user['id']
+        user_id = request.user["id"]
         return self.notification_service.list_user_notifications(user_id)

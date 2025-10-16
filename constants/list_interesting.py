@@ -67,6 +67,6 @@ interesting_things = [
     "Theater/Acting",
     "Genealogy",
     "Travel Blogging",
-    "Podcasting",           
+    "Podcasting",
     "Home Brewing",
 ]

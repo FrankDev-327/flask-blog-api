@@ -1,12 +1,13 @@
 from flask_restful import Resource, request
 from middleware.check_token import require_token
-from services.contact_service import ContactService 
+from services.contact_service import ContactService
 
-class CreateNewContactController(Resource): 
+
+class CreateNewContactController(Resource):
     def __init__(self):
         super().__init__()
         self.contact_service = ContactService()
-        
+
     @require_token
     def post(self):
         """
@@ -73,7 +74,7 @@ class CreateNewContactController(Resource):
                   example: "Error adding contact: <error details>"
         """
         data = request.get_json()
-        contact_id = data.get('contact_id')
-        user_id = request.user['id']
-        
-        return self.contact_service.add_contact(user_id, contact_id)    
+        contact_id = data.get("contact_id")
+        user_id = request.user["id"]
+
+        return self.contact_service.add_contact(user_id, contact_id)

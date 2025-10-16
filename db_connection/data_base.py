@@ -3,9 +3,10 @@ from logger.logging import LoggerApp
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
+
 class DataBase:
     def __init__(self):
-        self.db_url = os.getenv('DB_CONN')
+        self.db_url = os.getenv("DB_CONN")
         self.engine = None
         self.logger = LoggerApp()
 
@@ -30,7 +31,7 @@ class DataBase:
         else:
             self.logger.logInfoServer("No active database connection to close.")
             print("No active database connection to close.")
-            return {'message': 'User not found'}, 404
+            return {"message": "User not found"}, 404
 
     def getUrlConnection(self):
         return self.db_url

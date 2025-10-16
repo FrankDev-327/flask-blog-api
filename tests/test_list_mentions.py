@@ -1,6 +1,7 @@
 import pytest
 import requests
 
+
 @pytest.mark.order(9)
 def test_list_mentions(auth_token, api_url):
     headers = {"Authorization": f"Bearer {auth_token}"}

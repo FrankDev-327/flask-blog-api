@@ -1,6 +1,7 @@
 import pytest
 import requests
 
+
 @pytest.mark.order(8)
 def test_list_notification(auth_token, api_url):
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -13,4 +14,3 @@ def test_list_notification(auth_token, api_url):
     assert data["message"] == "List of notifications"
     assert isinstance(data["notifications"], list)
     assert len(data["notifications"]) > 0
-    

@@ -2,11 +2,12 @@ from flask_restful import Resource, request
 from middleware.check_token import require_token
 from services.interesting_service import InterestingService
 
+
 class CreatingInterestingController(Resource):
     def __init__(self):
         super().__init__()
         self.interesting_service = InterestingService()
-        
+
     @require_token
     def post(self):
         """
@@ -68,7 +69,7 @@ class CreatingInterestingController(Resource):
           500:
             description: Internal server error
         """
-        
-        user_id = request.user['id']
+
+        user_id = request.user["id"]
         interesting_body = request.get_json()
         return self.interesting_service.createInteresting(interesting_body, user_id)

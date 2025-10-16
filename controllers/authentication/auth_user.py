@@ -2,11 +2,12 @@ from middleware.check_token import generateToken
 from flask_restful import Resource, request
 from services.user_service import UserService
 
+
 class AuthUserController(Resource):
     def __init__(self):
         super().__init__()
         self.user_service = UserService()
-    
+
     def post(self):
         """
         Authenticate user and return JWT token
@@ -50,4 +51,4 @@ class AuthUserController(Resource):
         user_body = request.get_json(force=True)
         user = self.user_service.checkExistinUser(user_body)
         token = generateToken(user)
-        return {'token': token}
+        return {"token": token}

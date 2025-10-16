@@ -2,11 +2,12 @@ from middleware.check_token import require_token
 from services.private_message_service import PrivateMessageService
 from flask_restful import Resource, request
 
-class PrivateMessagesListController(Resource):  
+
+class PrivateMessagesListController(Resource):
     def __init__(self):
         super().__init__()
         self.private_message_service = PrivateMessageService()
-        
+
     @require_token
     def get(self):
         """
@@ -63,12 +64,16 @@ class PrivateMessagesListController(Resource):
                   type: string
                   example: "Error retrieving private messages"
         """
-        sender_id = request.args.get('sender_id', type=int)
-        receiver_id = request.args.get('receiver_id', type=int)
-        page = request.args.get('page', default=1, type=int)
-        per_page = request.args.get('per_page', default=10, type=int)
-        
+        sender_id = request.args.get("sender_id", type=int)
+        receiver_id = request.args.get("receiver_id", type=int)
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=10, type=int)
+
         if not sender_id or not receiver_id:
-            return {'message': 'sender_id and receiver_id are required and must be integers'}, 400
-        
-        return self.private_message_service.get_private_message_by_id(sender_id, receiver_id, page, per_page)
+            return {
+                "message": "sender_id and receiver_id are required and must be integers"
+            }, 400
+
+        return self.private_message_service.get_private_message_by_id(
+            sender_id, receiver_id, page, per_page
+        )
