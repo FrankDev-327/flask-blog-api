@@ -10,12 +10,6 @@ class PostModel(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
-    user = db.relationship(
-        "UserModel", back_populates="posts", lazy=True
-    )
-
-    images = db.relationship(
-        "ImagesModel", back_populates="post", lazy=True
-    )
-
+    images = db.relationship("ImagesModel", back_populates="post", lazy=True)
     comments = db.relationship("CommentModel", back_populates="post", lazy=True)
+    user = db.relationship("UserModel", back_populates="posts", lazy=True)

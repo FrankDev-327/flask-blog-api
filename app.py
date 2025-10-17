@@ -16,6 +16,7 @@ from routes.roles.role_route import register_role_route
 from routes.mentions.mention_route import register_mentions_routes
 from routes.users.user_route import register_user_routes
 from routes.posts.post_route import register_post_routes
+from routes.upload_files.upload_files_route import register_upload_files_route
 from routes.contacts.contacts_route import register_contacts_route
 from routes.interesting.interesting_route import register_interesting_route
 from routes.private_messages.private_messages_routes import (
@@ -86,6 +87,7 @@ register_contacts_route(api)
 register_mentions_routes(api)
 register_interesting_route(api)
 register_health_check_route(api)
+register_upload_files_route(api)
 register_notifications_route(api)
 register_private_messages_routes(api)
 

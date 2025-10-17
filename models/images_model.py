@@ -8,7 +8,7 @@ class ImagesModel(db.Model):
     url_file = db.Column(db.String(), nullable=False)
     size_file = db.Column(db.Integer(), nullable=True)
     post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), nullable=False)
-    
+
     post = db.relationship(
         "PostModel",
         foreign_keys=[post_id],  # This is correct (or can often be omitted)
