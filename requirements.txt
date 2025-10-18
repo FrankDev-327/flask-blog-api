@@ -17,3 +17,4 @@ prometheus-client
 flasgger
 pika
 minio
+cloudinary
