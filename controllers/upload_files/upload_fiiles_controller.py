@@ -14,10 +14,7 @@ class UploadFilesController(Resource):
     @require_token
     @check_file_extension
     def post(self):
-        try:
-            file = request.files["file"]
-            filename = secure_filename(file.filename)
-            sizeFile = os.fstat(file.fileno()).st_size
-            return self.uploadFileService.upload_image(filename, file, sizeFile)
-        except Exception as e:
-            return {"message": e}, 500
+        file = request.files["file"]
+        filename = secure_filename(file.filename)
+        sizeFile = os.fstat(file.fileno()).st_size
+        return self.uploadFileService.upload_image(filename, file, sizeFile)

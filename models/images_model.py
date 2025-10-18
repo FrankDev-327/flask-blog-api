@@ -7,6 +7,7 @@ class ImagesModel(db.Model):
     ext_file = db.Column(db.String(4), nullable=True)
     url_file = db.Column(db.String(), nullable=False)
     size_file = db.Column(db.Integer(), nullable=True)
+    public_id = db.Column(db.String(), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), nullable=False)
 
     post = db.relationship(
