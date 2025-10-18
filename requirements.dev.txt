@@ -21,3 +21,5 @@ pytest-html
 python-socketio[client]
 flake8
 black
+minio
+cloudinary

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 bcrypt = Bcrypt()
 MENTION_REGEX = r"@([a-zA-Z0-9_]+)"
+ALLOWED_EXTENSIONS = {"txt", "png", "gif", "jpg"}
 
 
 class Helper:

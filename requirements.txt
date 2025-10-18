@@ -16,4 +16,5 @@ PyJWT
 prometheus-client
 flasgger
 pika
-
+minio
+cloudinary
