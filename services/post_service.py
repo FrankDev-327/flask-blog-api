@@ -95,8 +95,6 @@ class PostService:
                 select(func.count()).select_from(CommentModel)
             ).scalar_one()
             total_pages = total_comments + per_page - 1
-
-            #post_id, post_title, _, _, _, _ = result[0]
             post_dict = {
                 "id": result[0][0],
                 "title": result[0][1],
@@ -119,12 +117,10 @@ class PostService:
                         "check_instance"
                     ),
                 }
-                
                 images_dict = {
                     "img_url" : url_file,
                     "public_id" : public_id
                 }
-                
                 if images_dict not in post_dict["images"]:
                     post_dict["images"].append(images_dict)
                 post_dict["comments"].append(comment_dict)
