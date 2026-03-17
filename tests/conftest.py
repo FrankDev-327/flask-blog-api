@@ -7,11 +7,11 @@ from app import app, socketio
 def api_url():
     return "http://127.0.0.1:5000/api"
 
-k
+
 @pytest.fixture(scope="session")
 def create_new_interest():
     return {
-        "interest_name": "perra zorra de marisol bebedora de semen por el ano",
+        "interest_name": "test text",
         "description": "test_description",
     }
 
@@ -19,7 +19,7 @@ def create_new_interest():
 @pytest.fixture(scope="session")
 def messages_to_send():
     return {
-        "content": "perra zorra de marisol bebedora de semen por el ano",
+        "content": "test text",
         "sender_id": 3,
         "receiver_id": 13,
     }
