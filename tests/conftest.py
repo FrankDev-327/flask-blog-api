@@ -7,7 +7,7 @@ from app import app, socketio
 def api_url():
     return "http://127.0.0.1:5000/api"
 
-
+k
 @pytest.fixture(scope="session")
 def create_new_interest():
     return {

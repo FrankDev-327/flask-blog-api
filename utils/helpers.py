@@ -23,6 +23,10 @@ class Helper:
             dateTime = (current_date - timedelta(days=15)).strftime(formatTime)
         elif action == "add_time":
             dateTime = (current_date + timedelta(days=3)).strftime(formatTime)
+        elif action == "check_instance":
+            if isinstance(timeToBeFormatted, str):
+                return timeToBeFormatted
+            return timeToBeFormatted.strftime(formatTime)
         else:
             dateTime = timeToBeFormatted.strftime(formatTime)
         return dateTime

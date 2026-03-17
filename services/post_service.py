@@ -3,6 +3,7 @@ from connection import db
 from utils.helpers import Helper
 from logger.logging import LoggerApp
 from models.post_model import PostModel
+from models.images_model import ImagesModel
 from models.comment_model import CommentModel
 from redis_serve.redis_service import RedisService
 from sqlalchemy import func, select, insert, update
@@ -73,11 +74,14 @@ class PostService:
                     PostModel.id,
                     PostModel.title,
                     CommentModel.id,
+                    ImagesModel.url_file,
+                    ImagesModel.public_id,
                     CommentModel.content,
                     CommentModel.created_at,
                     CommentModel.updated_at,
                 )
                 .join(PostModel.comments)
+                .join(PostModel.images)
                 .where(PostModel.id == post_id)
                 .limit(per_page)
                 .offset((page - 1) * per_page)
@@ -92,11 +96,17 @@ class PostService:
             ).scalar_one()
             total_pages = total_comments + per_page - 1
 
-            post_id, post_title, _, _, _, _ = result[0]
-            post_dict = {"id": post_id, "title": post_title, "comments": []}
+            #post_id, post_title, _, _, _, _ = result[0]
+            post_dict = {
+                "id": result[0][0],
+                "title": result[0][1],
+                "comments": [],
+                "images": [],
+            }
 
             for row in result:
-                _, _, comment_id, content, created_at, updated_at = row
+                post_id, post_title, comment_id, content, created_at, updated_at, url_file,  public_id = row
+                print(url_file)
                 comment_dict = {
                     "id": comment_id,
                     "content": content,
@@ -104,10 +114,19 @@ class PostService:
                         created_at, "%Y-%m-%d %H:%M:%S"
                     ),
                     "updated_at": helper.formatting_time(
-                        updated_at, "%Y-%m-%d %H:%M:%S"
+                        updated_at, "%Y-%m-%d %H:%M:%S",
+                        "",
+                        "check_instance"
                     ),
                 }
-
+                
+                images_dict = {
+                    "img_url" : url_file,
+                    "public_id" : public_id
+                }
+                
+                if images_dict not in post_dict["images"]:
+                    post_dict["images"].append(images_dict)
                 post_dict["comments"].append(comment_dict)
 
             return {
