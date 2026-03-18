@@ -10,37 +10,9 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Install PostgreSQL client
-      run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
-    # Debug (optional but VERY useful)
-    - name: Check if DB URL is set
-      env:
-        DB_URL: ${{ secrets.NEON_DB_URL }}
-      run: |
-        if [ -z "$DB_URL" ]; then
-          echo "❌ NEON_DB_URL is EMPTY"
-          exit 1
-        else
-          echo "✅ NEON_DB_URL is set"
-        fi
-
-    # Wait + test connection
-    - name: Test Neon DB connection
-      env:
-        DB_URL: ${{ secrets.NEON_DB_URL }}
-      run: |
-        echo "Attempting DB connection..."
-        psql "$DB_URL" -c "SELECT 1;" || (echo "❌ DB connection failed" && exit 1)
-
-    - name: Test Neon DB connection
-      run: |
-        psql "${{ secrets.NEON_DB_URL }}" -c "SELECT 1;"
-
     - uses: actions/checkout@v6
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
@@ -53,7 +25,31 @@ jobs:
         if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
+        echo "stop the build if there are Python syntax errors or undefined names"
         flake8 . --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        eco "exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide"
         flake8 . --count --exit-zero
+
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies for migration
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
+    - name: Run database migrations
+      env:
+        DB_URL: ${{ secrets.NEON_DB_URL }}
+      run: |
+        flask db upgrade
+
+
+
