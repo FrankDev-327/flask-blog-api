@@ -19,7 +19,7 @@ jobs:
 
     - name: Test Neon DB connection
       run: |
-        psql "${{ secrets.NEON_DB_URL }}" -c "SELECT 1;"
+        psql "${{ secrets.DB_CONN }}" -c "SELECT 1;"
 
     - uses: actions/checkout@v6
     - name: Set up Python 3.10
