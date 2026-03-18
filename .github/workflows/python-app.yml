@@ -47,7 +47,7 @@ jobs:
         if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
     - name: Run database migrations
       env:
-        DB_URL: ${{ secrets.NEON_DB_URL }}
+        NEON_DB_URL: ${{ secrets.NEON_DB_URL }}
       run: |
         flask db upgrade
 
