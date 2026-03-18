@@ -6,7 +6,7 @@ from sqlalchemy.exc import OperationalError
 
 class DataBase:
     def __init__(self):
-        self.db_url = os.getenv("DB_CONN")
+        self.db_url = os.getenv("NEON_DB_URL")
         self.engine = None
         self.logger = LoggerApp()
 

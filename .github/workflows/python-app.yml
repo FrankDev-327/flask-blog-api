@@ -17,9 +17,29 @@ jobs:
     - name: Install PostgreSQL client
       run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
+    # Debug (optional but VERY useful)
+    - name: Check if DB URL is set
+      env:
+        DB_URL: ${{ secrets.NEON_DB_URL }}
+      run: |
+        if [ -z "$DB_URL" ]; then
+          echo "❌ NEON_DB_URL is EMPTY"
+          exit 1
+        else
+          echo "✅ NEON_DB_URL is set"
+        fi
+
+    # Wait + test connection
+    - name: Test Neon DB connection
+      env:
+        DB_URL: ${{ secrets.NEON_DB_URL }}
+      run: |
+        echo "Attempting DB connection..."
+        psql "$DB_URL" -c "SELECT 1;" || (echo "❌ DB connection failed" && exit 1)
+
     - name: Test Neon DB connection
       run: |
-        psql "${{ secrets.DB_CONN }}" -c "SELECT 1;"
+        psql "${{ secrets.NEON_DB_URL }}" -c "SELECT 1;"
 
     - uses: actions/checkout@v6
     - name: Set up Python 3.10
