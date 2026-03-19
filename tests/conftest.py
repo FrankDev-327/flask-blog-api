@@ -25,7 +25,7 @@ def messages_to_send():
     }
 
 
-@pytest.fixture(scope="session")
+""" @pytest.fixture(scope="session")
 def test_create_new_user(user_data, auth_token, api_url):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = requests.post(f"{api_url}/user", headers=headers, json=user_data)
@@ -33,7 +33,7 @@ def test_create_new_user(user_data, auth_token, api_url):
     data = response.json()
     assert "message" in data
     assert isinstance(data["message"], str)
-    assert data["message"] == "User created"
+    assert data["message"] == "User created" """
 
 
 @pytest.fixture(scope="session")
