@@ -56,7 +56,7 @@ jobs:
         REDIS_CLOUD_PASSWORD: ${{ vars.REDIS_CLOUD_PASSWORD }}
         REDIS_CLOUD_USERNAME: ${{ vars.REDIS_CLOUD_USERNAME }}
       run: |
-        # flask run --host=0.0.0.0 --port=5000 &
+        flask run --host=0.0.0.0 --port=5000 &
         pytest tests || echo "Tests failed"
 
   cleaning_db:
