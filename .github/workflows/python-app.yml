@@ -12,6 +12,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v6
     - name: Set up Python 3.10
@@ -32,7 +33,7 @@ jobs:
 
   testing:
     runs-on: ubuntu-latest
-    needs: build
+    needs: migration
 
     steps:
     - name: Checkout code
@@ -48,17 +49,30 @@ jobs:
     - name: Running testing
       env:
         PORT: 5000
+        FLASK_APP: "app.py"
         NEON_DB_URL: ${{ vars.NEON_DB_URL }}
         REDIS_CLOUD_HOST: ${{ vars.REDIS_CLOUD_HOST }}
         REDIS_CLOUD_PORT: ${{ vars.REDIS_CLOUD_PORT }}
         REDIS_CLOUD_PASSWORD: ${{ vars.REDIS_CLOUD_PASSWORD }}
         REDIS_CLOUD_USERNAME: ${{ vars.REDIS_CLOUD_USERNAME }}
       run: |
-         python app.py &
-         sleep 5
-         pytest tests
+        flask run --host=0.0.0.0 --port=5000 &
+        pytest tests
 
-  build:
+  cleaning_db:
+    runs-on: ubuntu-latest
+    needs: testing
+
+    steps:
+    - name: Install PostgreSQL client
+      run: sudo apt-get update && sudo apt-get install -y postgresql-client
+    - name: Drop all tables
+      env:
+        DB_URL: ${{ vars.NEON_DB_URL }}
+      run: |
+        psql "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+  migration:
     runs-on: ubuntu-latest
     needs: lint
 

@@ -15,4 +15,6 @@ COPY . .
 
 EXPOSE 5000
 
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["python3", "app.py"]
+
+#ENTRYPOINT ["/entrypoint.sh"]
