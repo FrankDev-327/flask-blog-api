@@ -25,6 +25,7 @@ def messages_to_send():
     }
 
 
+@pytest.fixture(scope="session")
 def test_create_new_user(user_data, auth_token, api_url):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = requests.post(f"{api_url}/user", headers=headers, json=user_data)
