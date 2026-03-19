@@ -23,3 +23,4 @@ flake8
 black
 minio
 cloudinary
+pytest-order
