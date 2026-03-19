@@ -1,16 +1,6 @@
 import pytest
-# import requests
-from app import app as flask_app, socketio
-
-
-@pytest.fixture(scope="session")
-def app():
-    yield flask_app
-
-
-@pytest.fixture(scope="session")
-def client(app):
-    return app.test_client()
+import requests
+from app import app, socketio
 
 
 @pytest.fixture(scope="session")
@@ -35,7 +25,7 @@ def messages_to_send():
     }
 
 
-""" @pytest.fixture(scope="session")
+@pytest.fixture(scope="session")
 def test_create_new_user(user_data, auth_token, api_url):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = requests.post(f"{api_url}/user", headers=headers, json=user_data)
@@ -43,7 +33,18 @@ def test_create_new_user(user_data, auth_token, api_url):
     data = response.json()
     assert "message" in data
     assert isinstance(data["message"], str)
-    assert data["message"] == "User created" """
+    assert data["message"] == "User created"
+
+
+@pytest.fixture(scope="session")
+def auth_token(api_url):
+    user_login = {"password": "123456789", "nick_name": "test_user_20"}
+    response = requests.post(f"{api_url}/auth", json=user_login)
+    assert response.status_code == 200
+    assert len(response.json()["token"]) > 0
+    parts = response.json()["token"].split(".")
+    assert len(parts) == 3
+    return response.json()["token"]
 
 
 @pytest.fixture(scope="session")
@@ -57,19 +58,7 @@ def user_data():
 
 
 @pytest.fixture(scope="session")
-def auth_token(client, api_url, user_data):
-    client.post(f"{api_url}/api/user", json=user_data)
-    user_login = {"password": "123456789", "nick_name": "test_user_20"}
-    response = client.post(f"{api_url}/auth", json=user_login)
-    assert response.status_code == 200, f"Auth failed: {response.data}"
-    assert len(response.json()["token"]) > 0
-    parts = response.json()["token"].split(".")
-    assert len(parts) == 3
-    return response.json()["token"]
-
-
-@pytest.fixture(scope="session")
-def socket_client(app, auth_token):
+def socket_client(auth_token):
     client = socketio.test_client(app, query_string=f"token={auth_token}")
     yield client
     client.disconnect()
