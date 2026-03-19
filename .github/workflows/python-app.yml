@@ -48,6 +48,10 @@ jobs:
     - name: Run database migrations
       env:
         NEON_DB_URL: ${{ secrets.NEON_DB_URL }}
+        REDIS_CLOUD_HOST: ${{ secrets.REDIS_CLOUD_HOST }}
+        REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
+        REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
+        REDIS_CLOUD_USERNAME: ${{ secrets.REDIS_CLOUD_USERNAME }}
       run: |
         flask db upgrade
 
