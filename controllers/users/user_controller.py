@@ -1,6 +1,6 @@
 from flask_restful import Resource, request
 from services.user_service import UserService
-from middleware.check_token import require_token, check_user_role
+# from middleware.check_token import require_token, check_user_role
 
 
 class UserController(Resource):
@@ -8,8 +8,8 @@ class UserController(Resource):
         super().__init__()
         self.user_service = UserService()
 
-    @require_token
-    @check_user_role
+    # @require_token
+    # @check_user_role
     def post(self):
         """
         Create a new user
