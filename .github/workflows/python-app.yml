@@ -70,7 +70,7 @@ jobs:
           "email": "test_user_20@test.com"
         }' -H "Content-Type: application/json"
 
-        pytest tests || echo "Tests failed"
+        pytest tests || echo "Tests failed horrible..."
 
   cleaning_db:
     runs-on: ubuntu-latest
@@ -112,6 +112,19 @@ jobs:
         REDIS_CLOUD_USERNAME: ${{ vars.REDIS_CLOUD_USERNAME }}
       run: |
         flask db upgrade
+
+  build_container:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag flask-app:$(date +%s)
+
+
 
 
 
