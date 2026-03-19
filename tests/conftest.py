@@ -25,6 +25,16 @@ def messages_to_send():
     }
 
 
+def test_create_new_user(user_data, auth_token, api_url):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = requests.post(f"{api_url}/user", headers=headers, json=user_data)
+    assert response.status_code in (200, 201)
+    data = response.json()
+    assert "message" in data
+    assert isinstance(data["message"], str)
+    assert data["message"] == "User created"
+
+
 @pytest.fixture(scope="session")
 def auth_token(api_url):
     user_login = {"password": "123456789", "nick_name": "test_user_20"}
@@ -39,10 +49,10 @@ def auth_token(api_url):
 @pytest.fixture(scope="session")
 def user_data():
     return {
-        "name": "test_user_4444",
+        "name": "test_user_20",
         "password": "123456789",
-        "nick_name": "test_nich_name_user_4444",
-        "email": "test_user_4444@test.com",
+        "nick_name": "test_user_20",
+        "email": "test_user_20@test.com",
     }
 
 
