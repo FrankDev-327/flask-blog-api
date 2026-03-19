@@ -1,5 +1,6 @@
-from flask import session
+"""from flask import session"""
 
-class Session():
+
+class Session:
     def __init__(self):
         self.instance_session

@@ -1,58 +1,129 @@
 import os
-import models
-import logging
+import time
+import traceback
+from flask_cors import CORS
+from flasgger import Swagger
 from flask_restful import Api
-from flask import Flask, jsonify, request
+from dotenv import load_dotenv
+from utils.helpers import bcrypt
+from logger.logging import LoggerApp
+from connection import init_db, init_migrate
 from db_connection.data_base import DataBase
 from werkzeug.exceptions import HTTPException
-from routes.user_route import register_user_routes
-from routes.post_route import register_post_routes
-from routes.comment_route import register_comment_route
+from routes.authentication.auth_user import register_auth_user
+from prometheus_client import Histogram, Counter
+from routes.roles.role_route import register_role_route
+from routes.mentions.mention_route import register_mentions_routes
+from routes.users.user_route import register_user_routes
+from routes.posts.post_route import register_post_routes
+from routes.images.images_route import register_images_router
+from routes.upload_files.upload_files_route import register_upload_files_route
+from routes.contacts.contacts_route import register_contacts_route
+from routes.interesting.interesting_route import register_interesting_route
+from routes.private_messages.private_messages_routes import (
+    register_private_messages_routes,
+)
+from routes.notifications.notification_route import register_notifications_route
+from flask import Flask, jsonify, Response, request
+from socket_service.socket_service import SockerService
+from routes.comments.comment_route import register_comment_route
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from routes.health_check_route import register_health_check_route
-from connection import init_db, db, init_migrate 
 
-app = Flask(__name__)
+load_dotenv()
+request_count = Counter(
+    "api_request_count", "Total API Request Count", ["method", "route", "status"]
+)
+request_latency = Histogram(
+    "api_request_latency_seconds", "API latency", ["method", "route", "status"]
+)
+
+logger = LoggerApp()
 dbConn = DataBase()
-api = Api(app, prefix="/api", default_mediatype='application/json', catch_all_404s=True)
-app.secret_key = os.getenv('SECRET_SESSION')
+app = Flask(__name__)
+swagger = Swagger(app)
+bcrypt.init_app(app)
 
+app.secret_key = os.getenv("SECRET_SESSION")
+api = Api(app, prefix="/api", default_mediatype="application/json", catch_all_404s=True)
+
+CORS(app)
 init_db(app)
 init_migrate(app)
+logger.initLoggerInstance()
+socketInstance = SockerService(app)
+socketio = socketInstance.getSocketInstanceServer()
+socketInstance.register_all_sockets()
+socketInstance.start_redis_listener()
 
 if not dbConn.connect():
-    dbConn.disconnect() 
+    dbConn.disconnect()
 
-if os.getenv('ENV_APP') == 'development':
-    logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
 
-@app.route('/')
-def getAllMethods():
-    pass
+@app.before_request
+def before_request():
+    request.start_time = time.time()
 
-register_user_routes(api);
-register_post_routes(api);
-register_comment_route(api);
-register_health_check_route(api);
 
-# Catch all HTTP errors (4xx, 5xx)
+@app.after_request
+def after_request(response):
+    method = request.method
+    endpoint = request.endpoint or "unknown"
+    statusEndpoint = str(response.status_code)
+    latency = time.time() - request.start_time
+    request_count.labels(method=method, route=endpoint, status=statusEndpoint).inc()
+    request_latency.labels(
+        method=method, route=endpoint, status=statusEndpoint
+    ).observe(latency)
+    return response
+
+
+# Routes section
+register_auth_user(api)
+register_role_route(api)
+register_user_routes(api)
+register_post_routes(api)
+register_comment_route(api)
+register_images_router(api)
+register_contacts_route(api)
+register_mentions_routes(api)
+register_interesting_route(api)
+register_health_check_route(api)
+register_upload_files_route(api)
+register_notifications_route(api)
+register_private_messages_routes(api)
+
+
+@app.route("/metrics")
+def returnMetrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+
 @app.errorhandler(HTTPException)
 def handle_http_exception(e):
-    response = {
-        "error": e.name,       # e.g. "Not Found"
-        "message": e.description,
-        "status": e.code
-    }
+    response = {"error": e.name, "message": e.description, "status": e.code}
     return jsonify(response), e.code
 
 
-# Catch non-HTTP exceptions (uncaught errors)
 @app.errorhandler(Exception)
-def handle_exception(e):
+def handle_all_exceptions(e):
     response = {
         "error": "Internal Server Error",
-        "message": str(e),  # safe for all exceptions
-        "status": 500
+        "type": type(e).__name__,
+        "message": str(e) or repr(e),
+        "status": 500,
     }
+
+    print("".join(traceback.format_exception(None, e, e.__traceback__)))
     return jsonify(response), 500
 
 
+if __name__ == "__main__":
+    logger.logInfoServer("server starting...")
+    socketio.run(
+        app,
+        host=os.getenv("HOST"),
+        port=os.getenv("PORT"),
+        debug=True,
+        use_reloader=False,
+    )

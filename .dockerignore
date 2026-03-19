@@ -1,0 +1,5 @@
+.vscode
+api-flask-venv
+*.log
+*.html
+*.yaml

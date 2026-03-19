@@ -1,37 +1,285 @@
-from connection import db  
-from models.post_model import PostModel # Importing the db instance from connection.py
+import math
+from connection import db
+from utils.helpers import Helper
+from logger.logging import LoggerApp
+from models.post_model import PostModel
+from models.images_model import ImagesModel
+from models.comment_model import CommentModel
+from redis_serve.redis_service import RedisService
+from sqlalchemy import func, select, insert, update
+
+helper = Helper()
+
 
 class PostService:
     def __init__(self):
-        self.post_model = PostModel
+        self.logger = LoggerApp()
+        self.redisService = RedisService()
 
     def getPostById(self, post_id):
-        post = self.post_model.query.get(post_id)
-        if post:
-            return post.to_dict(), 200
-        return {'message': 'Post not found'}, 404
+        try:
+            stmt = select(PostModel).where(PostModel.id == post_id)
+            post = db.session.execute(stmt).scalar_one_or_none()
+            if post:
+                return {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": helper.formatting_time(
+                        post.created_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "updated_at": helper.formatting_time(
+                        post.updated_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                }, 200
+            return {"message": "Post not found"}, 404
+        except Exception as e:
+            db.session.rollback()
+            self.logger.logErrorInfo(
+                {"messerrorMsgage": f"Error gettting post {str(e)}"}
+            )
+            return {"message": f"Error gettting post: {str(e)}"}, 500
 
-    def getAllPosts(self):
-        posts = self.post_model.query.all()
-        return [post.to_dict() for post in posts], 200
+    def get_post_by_title(self, post_title):
+        try:
+            stmt = select(PostModel).where(PostModel.title.like(f"%{post_title}%"))
+            posts = db.session.execute(stmt).scalars().all()
+            post_list = [
+                {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": helper.formatting_time(
+                        post.created_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "updated_at": helper.formatting_time(
+                        post.updated_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                }
+                for post in posts
+            ]
+
+            return {"message": "List of posts", "post": post_list}, 200
+        except Exception as e:
+            db.session.rollback()
+            self.logger.logErrorInfo(
+                {"messerrorMsgage": f"Error gettting post byt title {str(e)}"}
+            )
+            return {"message": f"Error gettting post byt title: {str(e)}"}, 500
+
+    def listAllCommentByPostId(self, post_id, page, per_page):
+        try:
+            stmt = (
+                select(
+                    PostModel.id,
+                    PostModel.title,
+                    CommentModel.id,
+                    ImagesModel.url_file,
+                    ImagesModel.public_id,
+                    CommentModel.content,
+                    CommentModel.created_at,
+                    CommentModel.updated_at,
+                )
+                .join(PostModel.comments)
+                .join(PostModel.images)
+                .where(PostModel.id == post_id)
+                .limit(per_page)
+                .offset((page - 1) * per_page)
+            )
+
+            result = db.session.execute(stmt).all()
+            if not result:
+                return {"message": "Post not found"}, 404
+
+            total_comments = db.session.execute(
+                select(func.count()).select_from(CommentModel)
+            ).scalar_one()
+            total_pages = total_comments + per_page - 1
+            post_dict = {
+                "id": result[0][0],
+                "title": result[0][1],
+                "comments": [],
+                "images": [],
+            }
+
+            for row in result:
+                post_id, post_title, comment_id, content, created_at, updated_at, url_file,  public_id = row
+                print(url_file)
+                comment_dict = {
+                    "id": comment_id,
+                    "content": content,
+                    "created_at": helper.formatting_time(
+                        created_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "updated_at": helper.formatting_time(
+                        updated_at, "%Y-%m-%d %H:%M:%S",
+                        "",
+                        "check_instance"
+                    ),
+                }
+                images_dict = {
+                    "img_url" : url_file,
+                    "public_id" : public_id
+                }
+                if images_dict not in post_dict["images"]:
+                    post_dict["images"].append(images_dict)
+                post_dict["comments"].append(comment_dict)
+
+            return {
+                "message": "List of comments of a post",
+                "post": post_dict,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total_comments": total_comments,
+                    "total_pages": total_pages,
+                },
+            }, 200
+        except Exception as e:
+            db.session.rollback()
+            self.logger.logErrorInfo(
+                {"messerrorMsgage": f"Error listing post {str(e)}"}
+            )
+            return {"message": f"Error listing post: {str(e)}"}, 500
+
+    def getAllPosts(self, page, per_page):
+        try:
+            keyPost = f"allPost:page{page}:per{per_page}"
+            postsFromRedis = self.redisService.getTemporalInfo(keyPost)
+            if postsFromRedis is not None:
+                return {"message": "List of posts", "posts": postsFromRedis}, 200
+
+            stmt = select(PostModel).limit(per_page).offset((page - 1) * per_page)
+
+            posts = db.session.execute(stmt).scalars().all()
+            post_list = [
+                {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": helper.formatting_time(
+                        post.created_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "updated_at": helper.formatting_time(
+                        post.updated_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                }
+                for post in posts
+            ]
+
+            total_posts = db.session.execute(
+                select(func.count()).select_from(PostModel)
+            ).scalar_one()
+            total_pages = math.ceil(total_posts / per_page)
+            post_redis = {
+                "message": "List of posts",
+                "posts": post_list,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total_posts": total_posts,
+                    "total_pages": total_pages,
+                },
+            }
+
+            self.redisService.setTemporalInfo(keyPost, post_redis)
+            return post_redis, 200
+        except Exception as e:
+            db.session.rollback()
+            self.logger.logErrorInfo({"errorMessage": f"Error listing post {str(e)}"})
+            return {"message": f"Error listing post: {str(e)}"}, 500
 
     def createPost(self, postBody):
-        if not postBody or 'title' not in postBody or 'content' not in postBody or 'user_id' not in postBody:
-            return {'message': 'Title, content, and user_id required'}, 400  
-        
-        new_post = self.post_model(title=postBody['title'], content=postBody['content'], user_id=postBody['user_id'])
-        try:
-            db.session.add(new_post)  # Add to DB session
-            db.session.commit()       # Commit changes
-            return {'message': 'Post created', 'post': new_post.to_dict()}, 201
-        except Exception as e:
-            db.session.rollback()     # Rollback on error
-            return {'message': f'Error creating post: {str(e)}'}, 500
+        if (
+            not postBody
+            or "title" not in postBody
+            or "content" not in postBody
+            or "user_id" not in postBody
+        ):
+            self.logger.logErrorInfo(
+                {"messerrorMsgage": "Title, content, and user_id required"}
+            )
+            return {"message": "Title, content, and user_id required"}, 400
 
-    def put(self, post_id):
-        # Logic to update an existing post
-        return {'message': 'Post updated', 'post_id': post_id}, 200
+        try:
+            stmt = (
+                insert(PostModel)
+                .values(
+                    title=postBody["title"],
+                    content=postBody["content"],
+                    user_id=postBody["user_id"],
+                )
+                .returning(PostModel)
+            )
+
+            result = db.session.execute(stmt)
+            row = result.fetchone()
+            db.session.commit()
+            new_post = row[0]
+
+            return {
+                "message": "Post created",
+                "post": {
+                    "id": new_post.id,
+                    "title": new_post.title,
+                    "content": new_post.content,
+                    "user_id": new_post.user_id,
+                    "created_at": helper.formatting_time(
+                        new_post.created_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "updated_at": helper.formatting_time(
+                        new_post.updated_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                },
+            }, 200
+        except Exception as e:
+            db.session.rollback()
+            self.logger.logErrorInfo(
+                {"messerrorMsgage": f"Error creating post {str(e)}"}
+            )
+            return {"message": f"Error creating post: {str(e)}"}, 500
+
+    def updatePost(self, post_id, post_body):
+        try:
+            post = self.getPostById(post_id)
+            if not post:
+                return {"message": "Post not found"}, 404
+
+            stmt = (
+                update(PostModel)
+                .values(
+                    title=post_body["title"],
+                    content=post_body["content"],
+                )
+                .returning(PostModel)
+            )
+
+            result = db.session.execute(stmt)
+            row = result.fetchone()
+            db.session.commit()
+            new_post = row[0]
+
+            return {
+                "message": "Post created",
+                "post": {
+                    "id": new_post.id,
+                    "title": new_post.title,
+                    "content": new_post.content,
+                    "user_id": new_post.user_id,
+                    "created_at": helper.formatting_time(
+                        new_post.created_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                    "updated_at": helper.formatting_time(
+                        new_post.updated_at, "%Y-%m-%d %H:%M:%S"
+                    ),
+                },
+            }, 200
+        except Exception as e:
+            db.session.rollback()
+            self.logger.logErrorInfo(
+                {"messerrorMsgage": f"Error updating post {str(e)}"}
+            )
+            return {"message": f"Error updating post: {str(e)}"}, 500
 
     def delete(self, post_id):
-        # Logic to delete a post
-        return {'message': 'Post deleted', 'post_id': post_id}, 204
+        return {"message": "Post deleted", "post_id": post_id}, 204

@@ -1,4 +1,2 @@
-# models/__init__.py
-from .user_model import UserModel
-from .post_model import PostModel
-from .comment_model import CommentModel
+from .images_model import ImagesModel
+from .interesting_model import InterestingModel

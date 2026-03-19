@@ -1,3 +1,25 @@
 .vscode
 .env
 *.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+api-flask-venv/
+.pytest_cache
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+*.html
+# Docker
+*.pid
+*.sock

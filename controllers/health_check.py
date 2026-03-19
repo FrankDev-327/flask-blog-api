@@ -1,12 +1,9 @@
-from base_resource import BaseResource
+from flask_restful import Resource
 
-class HealthCheckController(BaseResource):
-    method_map = {
-        'GET': 'healthCheck',
-    }
-    
+
+class HealthCheckController(Resource):
     def __init__(self):
         super().__init__()
-        
-    def healthCheck(self):
-        return {"message": "OK"}, 200  
+
+    def get(self):
+        return {"message": "OK"}, 200
