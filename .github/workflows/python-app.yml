@@ -10,6 +10,14 @@ permissions:
   contents: read
 
 jobs:
+  printing_action:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: printing github action format as json
+      run: |
+          echo GitAction toJSON(github)
+
   lint:
     runs-on: ubuntu-latest
 
