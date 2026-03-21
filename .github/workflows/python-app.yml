@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v6
     - name: printing github action format as json
       run: |
-          echo GitAction toJSON(github)
+          echo GitAction: '${{ toJSON(github) }}' | jq
 
   lint:
     runs-on: ubuntu-latest
