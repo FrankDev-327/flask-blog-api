@@ -103,7 +103,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.dev.txt
 
-            - name: Start Flask app
+      - name: Start Flask app
         env:
           PORT: 5000
           FLASK_APP: app.py
@@ -114,15 +114,15 @@ jobs:
           REDIS_CLOUD_PORT: ${{ vars.REDIS_CLOUD_PORT }}
           REDIS_CLOUD_PASSWORD: ${{ vars.REDIS_CLOUD_PASSWORD }}
           REDIS_CLOUD_USERNAME: ${{ vars.REDIS_CLOUD_USERNAME }}
-          run: |
-            flask run --host=0.0.0.0 --port=5000 &
-            sleep 5 
-            curl -X POST http://127.0.0.1:5000/api/user -d '{
-              "name": "test_user_20",
-              "password": "123456789",
-              "nick_name": "test_user_20",
-              "email": "test_user_20@test.com"
-            }' -H "Content-Type: application/json"
+        run: |
+          flask run --host=0.0.0.0 --port=5000 &
+          sleep 5 
+          curl -X POST http://127.0.0.1:5000/api/user -d '{
+            "name": "test_user_20",
+            "password": "123456789",
+            "nick_name": "test_user_20",
+            "email": "test_user_20@test.com"
+          }' -H "Content-Type: application/json"
 
 # -------------------------
 # Testing
