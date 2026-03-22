@@ -24,3 +24,5 @@ black
 minio
 cloudinary
 pytest-order
+
+
