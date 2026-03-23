@@ -140,7 +140,7 @@ jobs:
 
       - name: Drop all tables
         env:
-          DB_URL: ${{ vars.NEON_DB_URL }}
+          DB_URL: ${{ secrets.NEON_DB_URL }}
         run: |
           echo dropping all tables
           psql "$DB_URL" -c "DROP SCHEMA public CASCADE;"
