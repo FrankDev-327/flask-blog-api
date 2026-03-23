@@ -2,7 +2,7 @@ name: Python application
 
 on:
   push:
-    branches: ["dev", "main"]
+    branches: ["dev"]
 
 permissions:
   contents: read
@@ -165,14 +165,17 @@ jobs:
         run: |
           docker build -t flask-app:latest .
 
-      - name: Sending email notification
-        uses: wadeww/send-email-action@master
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
         with:
-            server_address: smtp.gmail.com
-            port: 465
-            username: ${{secrets.MAIL_USERNAME}}
-            password: ${{secrets.MAIL_PASSWORD}}
-            subject: Workflow finished
-            body: Job completed ${{job.status}}
-            to: andramelech27@gmail.com, francisco.gonzalez@artronic.net
-            from: ${{ github.repository_owner }}
+          server_address: smtp.gmail.com
+          body: |
+            Repo: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "GitHub Actions - Build Status"
+          to: andramelech27@gmail.com, francisco.gonzalez@artronic.net
+          from: ${{ github.repository_owner }}
