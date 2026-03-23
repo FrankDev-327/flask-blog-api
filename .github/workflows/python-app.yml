@@ -164,19 +164,4 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t flask-app:latest .
-
-      - name: Send email notification
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          body: |
-            Repo: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-          server_port: 465
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "GitHub Actions - Build Status"
-          to: andramelech27@gmail.com, francisco.gonzalez@artronic.net
-          from: ${{ github.repository_owner }}
+          docker build -t flask-app:latest 
