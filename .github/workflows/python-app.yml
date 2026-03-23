@@ -2,7 +2,7 @@ name: Python application
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
 
 permissions:
   contents: read
@@ -152,6 +152,7 @@ jobs:
 # -------------------------
   build_container:
     runs-on: ubuntu-latest
+    needs: cleaning_db
     if: ${{ github.ref == 'refs/heads/main' }}
 
     steps:
