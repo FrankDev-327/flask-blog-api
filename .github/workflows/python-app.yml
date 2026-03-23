@@ -164,3 +164,15 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t flask-app:latest .
+
+      - name: Sending email notification
+        uses: wadeww/send-email-action@master
+        with:
+            server_address: smtp.gmail.com
+            port: 465
+            username: ${{secrets.MAIL_USERNAME}}
+            password: ${{secrets.MAIL_PASSWORD}}
+            subject: Workflow finished
+            body: Job completed ${{job.status}}
+            to: andramelech27@gmail.com, francisco.gonzalez@artronic.net
+            from: ${{ github.repository_owner }}
